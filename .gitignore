@@ -2,3 +2,5 @@
 img
 output
 vid
+*.pyc
+
