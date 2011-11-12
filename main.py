@@ -42,6 +42,7 @@ for n in xrange(start, end-step+1, step):
     f1 = cv.QueryFrame(capture)
     cv.CvtColor(f1,g1,cv.CV_BGR2GRAY)
 
+    pos_msec = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_POS_MSEC)
 #    sobel1 = cv.CreateMat(g1.height, g1.width, cv.CV_16S)
 #    cv.Sobel(g1, sobel1, 1, 1)
 
@@ -67,7 +68,7 @@ for n in xrange(start, end-step+1, step):
 #    cv.SaveImage('img/g_%d.jpg' % n, g1)
 #    cv.SaveImage('img/absdiff_%d_%d.jpg' % (n,n+step), d)
 
-    csv_writer.writerow([n, sum])
+    csv_writer.writerow([n, pos_msec, sum])
 
     #delta = sum(abs(ord(f1[c])-ord(f2[c])) for c in xrange(len(f1)))
 
