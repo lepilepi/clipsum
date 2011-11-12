@@ -35,6 +35,7 @@ print "To %d ms" % cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_POS_MSEC)
 
 g1 = cv.CreateMat(img.height, img.width, cv.CV_8U)
 g2 = cv.CreateMat(img.height, img.width, cv.CV_8U)
+d = cv.CreateMat(g1.height, g1.width, cv.CV_8UC1)
 
 for n in xrange(start, end-step+1, step):
     #get the first frame
@@ -55,7 +56,6 @@ for n in xrange(start, end-step+1, step):
 #    cv.Sobel(g2, sobel2, 1, 1)
 
     #calculate absolute difference
-    d = cv.CreateMat(g1.height, g1.width, cv.CV_8UC1)
     cv.AbsDiff(g1,g2,d)
     sum = cv.Sum(d)[0]
 
