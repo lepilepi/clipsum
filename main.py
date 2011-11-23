@@ -1,87 +1,45 @@
 import cv, sys, datetime, csv
+from optparse import OptionParser
+from videoparser import VideoParser
 
-input_filename = 'vid/ng.avi'
-output_filename = 'output/workfile.csv'
-STEP = 5
-START = 1280
-END = 2000
+class ResultWriter(object):
+    def __init__(self, file):
+        self.writer = csv.writer(open(file, 'wb'), delimiter=',',
+                                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    def write_to_csv(self, data):
+        self.writer.writerow(data)
 
-#setup csv
-csv_writer = csv.writer(open(output_filename, 'wb'), delimiter=',',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+def main():
+    parser = OptionParser()
+    parser.add_option("-i", "--input", dest="input_file",
+                      help="input video file", metavar="FILE")
+    parser.add_option("-o", "--output", dest="output_file",
+                      help="output csv file", metavar="FILE")
+    parser.add_option("-s", "--step", dest="step", default=1,
+                      help="frame stepping parameter (default 1; all the frames)", metavar="STEP")
+    parser.add_option("--start", dest="start",
+                      help="start form this frame", metavar="FRAME")
+    parser.add_option("--end", dest="end",
+                      help="processing ends with this frame", metavar="FRAME")
+    parser.add_option("-q", "--quiet",
+                      action="store_false", dest="verbose", default=True,
+                      help="don't print status messages to stdout")
+    (options, args) = parser.parse_args()
+    if not options.input_file and options.output_file:
+        parser.error("Input and output file parameters are required!")
 
-capture = cv.CaptureFromFile(input_filename)
+    #setup csv, open file
+    writer = ResultWriter(options.output_file)
 
-num_frames = int(cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_FRAME_COUNT))
-step = STEP or 1
-start = START or 0
-end = END or num_frames/step
+    parser = VideoParser(options.input_file, start=options.start,
+                         end=options.end, step=options.step, verbose=options.verbose)
+    parser.parse(writer.write_to_csv)
 
-start_time = datetime.datetime.now()
-print "File: %s" % input_filename
-print "Total frames: %d" % (((end-step+1)-start)/step)
-print "Start at: %s" % start_time.strftime("%Y.%m.%d. %H:%M:%S")
-
-
-cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, start)
-img = cv.QueryFrame(capture)
-cv.SaveImage('img/start_%d.jpg' % start or 0, img)
-print "From %d ms" % cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_POS_MSEC)
-
-cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, (end-step+1))
-img = cv.QueryFrame(capture)
-cv.SaveImage('img/end_%d.jpg' % (end-step+1) or 0, img)
-print "To %d ms" % cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_POS_MSEC)
-
-g1 = cv.CreateMat(img.height, img.width, cv.CV_8U)
-g2 = cv.CreateMat(img.height, img.width, cv.CV_8U)
-d = cv.CreateMat(g1.height, g1.width, cv.CV_8UC1)
-
-for n in xrange(start, end-step+1, step):
-    #get the first frame
-    cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, n)
-    f1 = cv.QueryFrame(capture)
-    cv.CvtColor(f1,g1,cv.CV_BGR2GRAY)
-
-    pos_msec = cv.GetCaptureProperty(capture, cv.CV_CAP_PROP_POS_MSEC)
-#    sobel1 = cv.CreateMat(g1.height, g1.width, cv.CV_16S)
-#    cv.Sobel(g1, sobel1, 1, 1)
-
-    #get the second frame
-    cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, n+step)
-    f2 = cv.QueryFrame(capture)
-    cv.CvtColor(f2,g2,cv.CV_BGR2GRAY)
-
-#    sobel2 = cv.CreateMat(g2.height, g2.width, cv.CV_16S)
-#    cv.Sobel(g2, sobel2, 1, 1)
-
-    #calculate absolute difference
-    cv.AbsDiff(g1,g2,d)
-    sum = cv.Sum(d)[0]
-
-    #calculate absolute difference sobel
-#    ds = cv.CreateMat(sobel1.height, sobel2.width, cv.CV_16S)
-#    cv.AbsDiff(sobel1,sobel2,ds)
-#    sum_sobel = cv.Sum(ds)[0]
-
-#    cv.SaveImage('img/sobel_%d.jpg' % n, sobel1)
-#    cv.SaveImage('img/g_%d.jpg' % n, g1)
-#    cv.SaveImage('img/absdiff_%d_%d.jpg' % (n,n+step), d)
-
-    csv_writer.writerow([n, pos_msec, sum])
-
-    #delta = sum(abs(ord(f1[c])-ord(f2[c])) for c in xrange(len(f1)))
-
-    sys.stdout.write("\r%.3f %% (%d of %d)" % (float(cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_POS_FRAMES)-start)/float(end-start)*100, (cv.GetCaptureProperty(capture,cv.CV_CAP_PROP_POS_FRAMES)), end))
+    
+    #end of process
+    sys.stdout.write("\r OK")
     sys.stdout.flush()
+    print "\nCompleted on %s" % datetime.datetime.now().strftime("%Y.%m.%d. %H:%M:%S")
 
-    #output_file.write("%d,%d" % (n,delta) )
-    #if not n==end-1: output_file.write("\n")
-
-#output_file.close()
-print "\nCompleted on %s" % datetime.datetime.now().strftime("%Y.%m.%d. %H:%M:%S")
-
-#for i in range(5):
-#    sys.stdout.write("\rhello: %d" % i)
-#    sys.stdout.flush()
-#    time.sleep(1)
+if __name__ == "__main__":
+    main()
