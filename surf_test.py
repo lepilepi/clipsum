@@ -32,12 +32,13 @@ if sys.argv[2] in ['list_only','save','show']:
 
     for arg in sys.argv[3:]:
 
-        (keypoints, descriptors) = ExtractSURF(im_grayscale, None, CreateMemStorage(), (1, 20000, 3, 1))
+        (keypoints, descriptors) = ExtractSURF(im_grayscale, None, CreateMemStorage(), (1, 300, 3, 1))
         Merge( im_grayscale, im_grayscale, im_grayscale, None, im_color )
-        print len(keypoints), len(descriptors)
         for ((x, y), laplacian, size, dir, hessian) in keypoints:
             print "x=%d y=%d laplacian=%d size=%d dir=%f hessian=%f" % (x, y, laplacian, size, dir, hessian)
             Circle(im_color,(x,y),size,Scalar(0,255,0),1)
+
+        print "Number of keypoinst: %d" % len(keypoints)
 
         if sys.argv[2]=="save":
             SaveImage('.'.join(arg.split('.')[:-1]) + '.SURF.%s.jpg' % sys.argv[4][1:], im_color)
