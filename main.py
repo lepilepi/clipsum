@@ -16,17 +16,17 @@ class ResultWriter(object):
         self.file.close()
 
 def create_meta_file(options):
-    start=int(options.start)
-    end=int(options.end)
-    step=int(options.step)
     start_time = datetime.now()
     meta_file = open(options.output_file + '.META', 'wb')
     meta_file.write('video file: %s\n' % options.input_file)
     meta_file.write('csv file: %s\n' % options.output_file)
-    meta_file.write('start_frame: %d\n' % start)
-    meta_file.write('end_frame: %d\n' % end)
-    meta_file.write('step: %d\n' % step)
-    meta_file.write("total frames: %d\n" % (((end-step+1)-start)/step))
+    meta_file.write('start_frame: %s\n' % options.start)
+    meta_file.write('end_frame: %s\n' % options.end)
+    meta_file.write('step: %s\n' % options.step)
+    if (options.step and options.start and options.end):
+        meta_file.write("total frames: %d\n" % (((options.end-options.step+1)-options.start)/options.step))
+    else:
+        meta_file.write("total frames: unknown\n")
     meta_file.write("started at: %s\n" % start_time.strftime("%Y.%m.%d. %H:%M:%S"))
     meta_file.close()
 

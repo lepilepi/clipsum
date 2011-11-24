@@ -22,7 +22,6 @@ class ShotDetector(object):
         mean_dev = array(dev_array, dtype=float).mean()
 
         key_times = [float(msec_array[c]) for c,d in enumerate(dev_array) if d>(mean_dev*5)]
-        print key_times
 
         clusters =DBScan(key_times, 1000).run()
         centroids = [float(sum([e for e in c])) / len(c) for c in clusters]
