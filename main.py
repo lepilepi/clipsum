@@ -25,7 +25,7 @@ def main():
                       action="store_false", dest="verbose", default=True,
                       help="don't print status messages to stdout")
     (options, args) = parser.parse_args()
-    if not options.input_file and options.output_file:
+    if not options.input_file or not options.output_file:
         parser.error("Input and output file parameters are required!")
 
     #setup csv, open file
