@@ -51,6 +51,11 @@ plt.grid(True)
 key_times = [float(msec_array[c]) for c,d in enumerate(dev_array) if d>(mean_dev*5)]
 result =DBScan(key_times, 1000).run()
 result = [float(sum([e for e in s])) / len(s) for s in result]
+
 print result
+for i in range(len(result)-1):
+    length = result[i+1]-result[i]
+    print "%d : %d  --- %d" % (result[i],result[i+1],length)
+
 
 raw_input()

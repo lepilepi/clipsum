@@ -1,5 +1,5 @@
-from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame, SaveImage
-from cv import CreateMat, CvtColor, AbsDiff, Sum, CV_8U, CV_8UC1
+from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame, SaveImage, Copy
+from cv import CreateMat, CvtColor, AbsDiff, Sum, CV_8U, CV_8UC1, CV_8UC3
 from cv import CV_CAP_PROP_FRAME_COUNT as FRAME_COUNT
 from cv import CV_CAP_PROP_POS_FRAMES as FRAME_POS
 from cv import CV_CAP_PROP_POS_MSEC as MSEC_POS
@@ -60,24 +60,26 @@ class VideoParser(object):
         self._log("To %d ms" % self._get_msec_pos())
 
         #initialize matrices
-        grayscaled_image1 = CreateMat(img.height, img.width, CV_8U)
-        grayscaled_image2 = CreateMat(img.height, img.width, CV_8U)
-        difference_image =  CreateMat(grayscaled_image1.height,  grayscaled_image2.width,  CV_8UC1)
+#        grayscaled_image1 = CreateMat(img.height, img.width, CV_8U)
+#        grayscaled_image2 = CreateMat(img.height, img.width, CV_8U)
+        buffer =  CreateMat(img.height,  img.width,  CV_8UC3)
+        difference_image =  CreateMat(img.height,  img.width,  CV_8UC3)
 
         for n in xrange(self.start, self.end-self.step+1, self.step):
             #get the first frame
             img = self._get_frame(n)
-            CvtColor(img, grayscaled_image1, BGR2GRAY)
+            Copy(img, buffer)
+            #CvtColor(img, grayscaled_image1, BGR2GRAY)
 
             #get the current position in milliseconds
             pos_msec = self._get_msec_pos()
 
             #get the second frame
             img = self._get_frame(n+self.step)
-            CvtColor(img, grayscaled_image2, BGR2GRAY)
+            #CvtColor(img, grayscaled_image2, BGR2GRAY)
 
             #calculate absolute difference
-            AbsDiff(grayscaled_image1, grayscaled_image2 ,difference_image)
+            AbsDiff(img, buffer ,difference_image)
             abs_diff = Sum(difference_image)[0]
 
             #---invoke the callback function---
