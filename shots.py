@@ -27,6 +27,6 @@ class ShotDetector(object):
         centroids = [float(sum([e for e in c])) / len(c) for c in clusters]
 
         for i in range(len(centroids)-1):
-            self.shots.append(Shot(centroids[i+1],centroids[i]))
+            self.shots.append(Shot(centroids[i],centroids[i+1]))
 
         return self.shots

@@ -52,23 +52,22 @@ def main():
                       help="don't print status messages to stdout")
     (options, args) = parser.parse_args()
 
-    if not options.output_file:
-        parser.error("Output file parameter is required!")
+    if not options.output_file or not options.input_file:
+        parser.error("Input and output file parameters are required!")
+
+    parser = VideoParser(options.input_file, start=options.start,
+                     end=options.end, step=options.step, verbose=options.verbose)
 
     try:
         open(options.output_file)
     except IOError:
         #csv file does not exist, we need to parse the video
-        if not options.input_file:
-            parser.error("Input file parameter is required!")
 
-        #parse the video
         #setup csv, open file
         writer = ResultWriter(options.output_file)
         create_meta_file(options)
 
-        parser = VideoParser(options.input_file, start=options.start,
-                             end=options.end, step=options.step, verbose=options.verbose)
+        #parse the video
         parser.parse(writer.write_to_csv)
 
         writer.close()
@@ -90,6 +89,7 @@ def main():
 
     for shot in shots:
         print "%d : %d  --- %d" % (shot.start,shot.end,shot.length())
+#        parser.save_frame_msec(shot.start + (shot.end-shot.start)/2)
 
 
 if __name__ == "__main__":

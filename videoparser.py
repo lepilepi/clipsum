@@ -31,11 +31,21 @@ class VideoParser(object):
         img = QueryFrame(self.capture)
         return img
 
+    def _get_frame_msec(self, pos):
+        SetCaptureProperty(self.capture, MSEC_POS, pos)
+        img = QueryFrame(self.capture)
+        return img
+
     def _get_msec_pos(self):
         return GetCaptureProperty(self.capture, MSEC_POS)
 
     def _get_frame_pos(self):
         return GetCaptureProperty(self.capture, FRAME_POS)
+
+    def save_frame_msec(self, msec):
+        self.capture = CaptureFromFile(self.filename)
+        img = self._get_frame_msec(msec)
+        SaveImage('%s.%d.jpg' % (self.filename.split('.')[0],msec), img)
 
     def parse(self, callback=lambda x:x):
         #setup capture from output file
