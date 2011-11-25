@@ -1,9 +1,15 @@
-from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame, SaveImage, Copy
+from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame
+from cv import SaveImage, Copy, GrabFrame, CreateVideoWriter, WriteFrame,RetrieveFrame
 from cv import CreateMat, CvtColor, AbsDiff, Sum, CV_8U, CV_8UC1, CV_8UC3
 from cv import CV_CAP_PROP_FRAME_COUNT as FRAME_COUNT
 from cv import CV_CAP_PROP_POS_FRAMES as FRAME_POS
 from cv import CV_CAP_PROP_POS_MSEC as MSEC_POS
+from cv import CV_CAP_PROP_FRAME_WIDTH as WIDTH
+from cv import CV_CAP_PROP_FRAME_HEIGHT as HEIGHT
 from cv import CV_BGR2GRAY as BGR2GRAY
+from cv import CV_FOURCC as FOURCC
+from cv import CV_CAP_PROP_FPS as FPS
+from cv import CV_CAP_PROP_FOURCC as PROP_FOURCC
 from datetime import datetime
 import sys
 
@@ -47,9 +53,14 @@ class VideoParser(object):
         img = self._get_frame_msec(msec)
         SaveImage('%s.%d.jpg' % (self.filename.split('.')[0],msec), img)
 
+    def get_capture(self):
+        if not hasattr(self,'capture'):
+            #setup capture from output file
+            self.capture = CaptureFromFile(self.filename)
+        return self.capture
+
     def parse(self, callback=lambda x:x):
-        #setup capture from output file
-        self.capture = CaptureFromFile(self.filename)
+        self.get_capture()
 
         frames = int(GetCaptureProperty(self.capture,FRAME_COUNT))
         if not self.end:
@@ -102,4 +113,46 @@ class VideoParser(object):
                     self.end
                 ))
             sys.stdout.flush()
+
+    def merge_shots(self,filename,shots):
+        self.get_capture()
+        
+        shot = shots[2]
+
+        print shot.start
+        print shot.end
+
+        #jump
+        SetCaptureProperty(self.capture, MSEC_POS, shot.start)
+        # Need a frame to get the output video dimensions
+        frame = QueryFrame(self.capture)
+        # New video file
+#        fourcc = GetCaptureProperty(self.capture, PROP_FOURCC)
+#        fps = GetCaptureProperty(self.capture, FPS)
+#        width = int(GetCaptureProperty(self.capture, WIDTH))
+#        height = int(GetCaptureProperty(self.capture, HEIGHT))
+
+        fps = GetCaptureProperty(self.capture, FPS)
+        width = int(GetCaptureProperty(self.capture, WIDTH))
+        height = int(GetCaptureProperty(self.capture, HEIGHT))
+        # uncompressed YUV 4:2:0 chroma subsampled
+        fourcc = FOURCC('I','4','2','0')
+        writer = CreateVideoWriter('out.avi', fourcc, fps, (width, height), 1)
+
+        print fps,width,height,fourcc
+#        video_out = CreateVideoWriter(filename, FOURCC('I','4','2','0'), fps, (width,height), 1)
+        # Write the frames
+#        print WriteFrame(writer, frame)
+
+        GrabFrame(self.capture)
+        frame = RetrieveFrame(self.capture)
+        print WriteFrame(writer, frame)
+
+
+        while self._get_msec_pos()<shot.end:
+#            frame = QueryFrame(self.capture)
+#            print WriteFrame(writer, frame)
+            GrabFrame(self.capture)
+            frame = RetrieveFrame(self.capture)
+            print WriteFrame(writer, frame)
 
