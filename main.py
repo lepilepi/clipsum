@@ -88,8 +88,8 @@ def main():
     shots = ShotDetector().detect(data)
 
     for shot in shots:
-        print "%d : %d  --- %d" % (shot.start,shot.end,shot.length())
-#        parser.save_frame_msec(shot.start + (shot.end-shot.start)/2)
+        #print "%d : %d  --- %d" % (shot.start,shot.end,shot.length())
+        parser.save_frame_msec(shot.start + (shot.end-shot.start)/2)
 
 
 if __name__ == "__main__":

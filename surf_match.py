@@ -12,7 +12,7 @@ from random import randint
 
 def match(desc1,desc2,kp1,kp2):
 
-    dist_ratio = 0.8 # 0.6 0.7? 0.8?
+    dist_ratio = 0.7 # 0.6 0.7? 0.8?
     matchscores = {}
     dotprods = dot(desc1,desc2.getT()) #vector of dot products
     #dotprods = 0.9999*dotprods
@@ -84,8 +84,8 @@ else:
 if sys.argv[2] in ['show_all','show']:
     im_concat =  CreateMat(im_grayscale1.height+im_grayscale2.height,  im_grayscale1.width+im_grayscale2.width,  CV_8U)
 
-    (keypoints1, descriptors1) = ExtractSURF(im_grayscale1, None, CreateMemStorage(), (0, 300, 5, 4)) #(1, 30, 3, 1)
-    (keypoints2, descriptors2) = ExtractSURF(im_grayscale2, None, CreateMemStorage(), (0, 300, 5, 4))
+    (keypoints1, descriptors1) = ExtractSURF(im_grayscale1, None, CreateMemStorage(), (1, 100, 5, 4)) #(1, 30, 3, 1)
+    (keypoints2, descriptors2) = ExtractSURF(im_grayscale2, None, CreateMemStorage(), (1, 100, 5, 4)) #((0, 300, 5, 4)COOL!!!
 
     print "Number of keypoints int the 1st image: %d" % len(keypoints1)
     print "Number of keypoints int the 2nd image: %d" % len(keypoints2)
@@ -97,9 +97,14 @@ if sys.argv[2] in ['show_all','show']:
     print "Checking matches..."
     matches = match(desc_mat1,desc_mat2,keypoints1,keypoints2)
 
-    print len(descriptors1)
-    print len(descriptors2)
-    print len(matches)
+    Ks = len(descriptors1)
+    Kc = len(descriptors2)
+    Km = len(matches)
+    qom=(float(Km)/Ks)*100*(float(Kc)/Ks)
+    print Ks
+    print Kc
+    print Km
+    print qom
 
 
     img1 = Image.fromstring("L", cv.GetSize(im_grayscale1), im_grayscale1.tostring())
