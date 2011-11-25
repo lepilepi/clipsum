@@ -32,7 +32,7 @@ if sys.argv[2] in ['list_only','save','show']:
 
     for arg in sys.argv[3:]:
 
-        (keypoints, descriptors) = ExtractSURF(im_grayscale, None, CreateMemStorage(), (1, 300, 3, 1))
+        (keypoints, descriptors) = ExtractSURF(im_grayscale, None, CreateMemStorage(), (1, 30, 3, 4))
         Merge( im_grayscale, im_grayscale, im_grayscale, None, im_color )
         for ((x, y), laplacian, size, dir, hessian) in keypoints:
             print "x=%d y=%d laplacian=%d size=%d dir=%f hessian=%f" % (x, y, laplacian, size, dir, hessian)
