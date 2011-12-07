@@ -48,16 +48,16 @@ class VideoParser(object):
     def _get_frame_pos(self):
         return GetCaptureProperty(self.capture, FRAME_POS)
 
-    def save_frame_msec(self, msec):
-        self.capture = CaptureFromFile(self.filename)
-        img = self._get_frame_msec(msec)
-        SaveImage('%s.%d.jpg' % (self.filename.split('.')[0],msec), img)
-
     def get_capture(self):
         if not hasattr(self,'capture'):
             #setup capture from output file
             self.capture = CaptureFromFile(self.filename)
         return self.capture
+
+    def save_frame_msec(self, msec):
+        self.get_capture()
+        img = self._get_frame_msec(msec)
+        SaveImage('%s.%d.jpg' % (self.filename.split('.')[0],msec), img)
 
     def parse(self, callback=lambda x:x):
         self.get_capture()

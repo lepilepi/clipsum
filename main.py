@@ -1,7 +1,7 @@
 import cv, sys, csv
 from datetime import datetime
 from optparse import OptionParser
-from shots import ShotDetector
+from shots import ShotDetector, Shot
 from videoparser import VideoParser
 
 class ResultWriter(object):
@@ -71,7 +71,6 @@ def main():
         parser.parse(writer.write_to_csv)
 
         writer.close()
-        writer.close()
         update_meta_file(options)
 
         #end of process
@@ -80,16 +79,32 @@ def main():
         print "\nCompleted on %s" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S")
 
     else:
-        print "CSV file exists, skip video parsing..."
+        print "Frames CSV file exists, skip video parsing..."
         
     #shot detetion
-    r=csv.reader(open(options.output_file))
-    data = [row for row in r]
-    shots = ShotDetector().detect(data)
+    try:
+        r=csv.reader(open(options.output_file.split('.csv')[0]+"_SHOTS.csv"))
+    except IOError:
+        #csv file does not exist, we need to create shots
+
+        r=csv.reader(open(options.output_file))
+        data = [row for row in r]
+        shots = ShotDetector().detect(data)
+
+        writer = ResultWriter(options.output_file.split('.csv')[0]+"_SHOTS.csv")
+        map(writer.write_to_csv,[[s.start,s.end,s.length()] for s in shots])
+        writer.close()
+    else:
+        print "Shots CSV file exists, skip shot detection..."
+        shots = [Shot(s[0],s[1]) for s in r]
 
     for shot in shots:
-        print "%d : %d  --- %d" % (shot.start,shot.end,shot.length())
+        print "[%d,%d],  --- %d" % (shot.start,shot.end,shot.length())
         #parser.save_frame_msec(shot.start + (shot.end-shot.start)/2)
+
+    lengths = [s.length() for s in shots]
+    print "SHOTS:",len(lengths)
+    print "AVG:",sum(lengths)/len(lengths)
 
 
 if __name__ == "__main__":

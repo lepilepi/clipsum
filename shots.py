@@ -3,8 +3,8 @@ from dbscan import DBScan
 
 class Shot(object):
     def __init__(self, start, end):
-        self.start = start
-        self.end = end
+        self.start = float(start)
+        self.end = float(end)
 
     def length(self):
         return self.end-self.start
@@ -13,6 +13,10 @@ class ShotDetector(object):
     shots = []
 
     def detect(self, data):
+
+        if len(self.shots):
+            return self.shots
+        
         msec_array = [row[1] for row in data]
         diff_array = [float(row[2]) for row in data]
         dev_array = abs(diff(diff_array))
