@@ -10,7 +10,7 @@ class FFmpeg(object):
     """
     CUT_CMD = "ffmpeg -y -i %s -ss %s -t %s -vcodec copy -acodec mp2 %s"
     CONVERT_CMD = "ffmpeg -y -i %s -sameq %s"
-    CONCAT_CMD = "cat %s > %s"
+#    CONCAT_CMD = "cat %s > %s"
 
     def __init__(self, input_filename, output_filename):
         self.input_filename = input_filename
@@ -32,7 +32,7 @@ class FFmpeg(object):
             self._cut(segment)
 
         self._join_pieces()
-#        self._cleanup()
+        self._cleanup()
 
     def _join_pieces(self):
 #        concat_command = self.CONCAT_CMD % (' '.join(self.pieces),self.output_filename)
@@ -45,22 +45,21 @@ class FFmpeg(object):
         t1 = self.time_format(segment[0])
         t2 = self.time_format(segment[1]-segment[0])
         filename = "%s_%d_%d" % (self.temphash,segment[0],segment[1])
+
         cut_command = self.CUT_CMD % (self.input_filename, t1, t2, filename+"_TMP.avi")
         print cut_command
         call(cut_command.split())
+
         convert_command = self.CONVERT_CMD % (filename+"_TMP.avi", filename + ".mpg")
         print convert_command
         call(convert_command.split())
 
-
-#        print "os.remove(%s)" % filename+"_TMP"
         os.remove(filename+"_TMP.avi")
         
         self.pieces.append(filename + ".mpg")
 
     def _cleanup(self):
         for filename in self.pieces:
-#            print "os.remove(%s)" % filename
             os.remove(filename)
         
     
