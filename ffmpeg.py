@@ -39,7 +39,8 @@ class FFmpeg(object):
         concat_command = "cat %s" % (' '.join(self.pieces),)
         print concat_command
         f = open(self.output_filename, 'wb')
-        Popen(concat_command.split(),stdout=f)
+        p=Popen(concat_command.split(),stdout=f)
+        p.wait()
     
     def _cut(self,segment):
         t1 = self.time_format(segment[0])
