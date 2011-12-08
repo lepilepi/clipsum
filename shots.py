@@ -2,9 +2,11 @@ from numpy import array, diff
 from dbscan import DBScan
 
 class Shot(object):
-    def __init__(self, start, end):
+    def __init__(self, start, end, hist=None, surf=None):
         self.start = float(start)
         self.end = float(end)
+        if hist: self.hist = hist
+        if surf: self.surf = surf
 
     def length(self):
         return self.end-self.start

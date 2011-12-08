@@ -59,6 +59,30 @@ class VideoParser(object):
         img = self._get_frame_msec(msec)
         SaveImage('%s.%d.jpg' % (self.filename.split('.')[0],msec), img)
 
+    def hsv_hist(self, msec):
+        self.get_capture()
+        img = self._get_frame_msec(msec)
+
+        # hue varies from 0 (~0 deg red) to 180 (~360 deg red again */
+        # saturation varies from 0 (black-gray-white) to 255 (pure spectrum color)
+        ranges = [[0, 359], [0, 255]]
+
+        #---- first image------------
+        # Convert to HSV
+        hsv = cv.CreateImage(cv.GetSize(img), 8, 3)
+        cv.CvtColor(img, hsv, cv.CV_BGR2HSV)
+
+        # Extract the H and S planes
+        h_plane = cv.CreateMat(img.rows, img.cols, CV_8UC1)
+        s_plane = cv.CreateMat(img.rows, img.cols, CV_8UC1)
+        cv.Split(hsv, h_plane, s_plane, None, None)
+        planes = [h_plane, s_plane]
+
+        hist = cv.CreateHist([100, 100], cv.CV_HIST_ARRAY, ranges, 1)
+        cv.CalcHist([cv.GetImage(i) for i in planes], hist)
+
+        return hist
+
     def parse(self, callback=lambda x:x):
         self.get_capture()
 

@@ -128,7 +128,7 @@ if sys.argv[2] in ['show_all','show']:
     print "Intersection" , cv.CompareHist(hist1, hist2, cv.CV_COMP_INTERSECT)
     print "Bhattacharyya" , cv.CompareHist(hist1, hist2, cv.CV_COMP_BHATTACHARYYA)
 
-
+    print h_bins, s_bins
 #    (_, max_value, _, _) = cv.GetMinMaxHistValue(hist)
 
 #    hist_img = cv.CreateImage((h_bins*scale, s_bins*scale), 8, 3)
