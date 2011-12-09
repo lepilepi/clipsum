@@ -99,12 +99,15 @@ def main():
         shots = [Shot(s[0],s[1]) for s in r]
 
     for shot in shots:
-        print "[%d,%d],  --- %d" % (shot.start,shot.end,shot.length())
+        median = shot.end-shot.start
+        shot.hist = parser.hsv_hist(median)
+        shot.surf = parser.surf(median)
+        print "[%d,%d], (%d) --- %d" % (shot.start,shot.end,median,shot.length())
         #parser.save_frame_msec(shot.start + (shot.end-shot.start)/2)
 
     lengths = [s.length() for s in shots]
     print "SHOTS:",len(lengths)
-    print "AVG:",sum(lengths)/len(lengths)
+    print "AVG LENGTH:",sum(lengths)/len(lengths)
 
 
 if __name__ == "__main__":

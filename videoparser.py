@@ -1,13 +1,15 @@
 from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame
 from cv import SaveImage, Copy, GrabFrame, CreateVideoWriter, WriteFrame,RetrieveFrame
 from cv import CreateMat, CvtColor, AbsDiff, Sum, CV_8U, CV_8UC1, CV_8UC3
+from cv import GetSize, CreateHist, CalcHist, GetImage, CreateImage, GetMat, Split
+from cv import CreateMemStorage
 from cv import CV_CAP_PROP_FRAME_COUNT as FRAME_COUNT
 from cv import CV_CAP_PROP_POS_FRAMES as FRAME_POS
 from cv import CV_CAP_PROP_POS_MSEC as MSEC_POS
 from cv import CV_CAP_PROP_FRAME_WIDTH as WIDTH
 from cv import CV_CAP_PROP_FRAME_HEIGHT as HEIGHT
 from cv import CV_BGR2GRAY as BGR2GRAY
-from cv import CV_FOURCC as FOURCC
+from cv import CV_FOURCC as FOURCC, CV_BGR2HSV, CV_HIST_ARRAY, ExtractSURF
 from cv import CV_CAP_PROP_FPS as FPS
 from cv import CV_CAP_PROP_FOURCC as PROP_FOURCC
 from datetime import datetime
@@ -61,7 +63,8 @@ class VideoParser(object):
 
     def hsv_hist(self, msec):
         self.get_capture()
-        img = self._get_frame_msec(msec)
+        frame = self._get_frame_msec(msec)
+        img = GetMat(frame)
 
         # hue varies from 0 (~0 deg red) to 180 (~360 deg red again */
         # saturation varies from 0 (black-gray-white) to 255 (pure spectrum color)
@@ -69,19 +72,30 @@ class VideoParser(object):
 
         #---- first image------------
         # Convert to HSV
-        hsv = cv.CreateImage(cv.GetSize(img), 8, 3)
-        cv.CvtColor(img, hsv, cv.CV_BGR2HSV)
+        hsv = CreateImage(GetSize(img), 8, 3)
+        CvtColor(img, hsv, CV_BGR2HSV)
 
         # Extract the H and S planes
-        h_plane = cv.CreateMat(img.rows, img.cols, CV_8UC1)
-        s_plane = cv.CreateMat(img.rows, img.cols, CV_8UC1)
-        cv.Split(hsv, h_plane, s_plane, None, None)
+        h_plane = CreateMat(img.rows, img.cols, CV_8UC1)
+        s_plane = CreateMat(img.rows, img.cols, CV_8UC1)
+        Split(hsv, h_plane, s_plane, None, None)
         planes = [h_plane, s_plane]
 
-        hist = cv.CreateHist([100, 100], cv.CV_HIST_ARRAY, ranges, 1)
-        cv.CalcHist([cv.GetImage(i) for i in planes], hist)
+        hist = CreateHist([100, 100], CV_HIST_ARRAY, ranges, 1)
+        CalcHist([GetImage(i) for i in planes], hist)
 
         return hist
+
+    def surf(self, msec):
+        self.get_capture()
+        img = self._get_frame_msec(msec)
+
+        img_grayscale = CreateMat(img.height,  img.width,  CV_8U)
+        CvtColor(img,img_grayscale,BGR2GRAY);
+
+        (keypoints, descriptors) = ExtractSURF(img_grayscale, None, CreateMemStorage(), (1, 100, 5, 4)) #(1, 30, 3, 1)
+        return (keypoints, descriptors)
+
 
     def parse(self, callback=lambda x:x):
         self.get_capture()
