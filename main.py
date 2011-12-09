@@ -1,6 +1,12 @@
 import cv, sys, csv
 from datetime import datetime
+from operator import attrgetter
 from optparse import OptionParser
+import math
+import random
+import Image
+import ImageDraw
+from clustering import Clusterable, CvHistAttr, KMeans, QuantityAttr
 from shots import ShotDetector, Shot
 from videoparser import VideoParser
 
@@ -34,6 +40,51 @@ def update_meta_file(options):
     meta_file = open(options.output_file + '.META', 'ab')
     meta_file.write("ended at: %s\n" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S"))
     meta_file.close()
+
+def draw_clusters(clusters, parser, results=None):
+        WIDTH = 1000
+        HEIGHT = 30
+        for cluster in clusters:
+            HEIGHT+=(int((len(cluster)*110)/WIDTH)+1)*110 + 70
+
+        out = Image.new('RGBA', (WIDTH,HEIGHT))
+        draw = ImageDraw.Draw(out)
+        x=10
+        y=10
+        n=0
+        # for n, cluster in zip(range(len(self.clusters)), self.clusters):
+        for cluster in sorted(clusters):
+            draw.rectangle((0, y-2, WIDTH, y+12), fill=(0,0,250))
+            draw.text((x,y),'Cluster #%s (%s objects)' % (n+1,len(cluster)))
+            y+=20
+            for shot in sorted(clusters[n], key=attrgetter('length')):
+                if x>=WIDTH-110:
+                    x = 10
+                    y+= 140
+                im = Image.open('%s.%d.jpg' % (parser.filename.split('.')[0], shot.median()))
+#                print shot.median()
+#                im = parser.PIL_frame_msec(shot.median())
+                im.thumbnail((100,100), Image.ANTIALIAS)
+#                if img.is_result:
+#                    draw.rectangle(((x-5,y-5),(x+105,y+135)),255)
+                out.paste(im, (x,y+12))
+
+                draw.text((x,y),str(shot.median()))
+#                if img.flag_move_to_clusternum:
+#                    draw.text((x,y+im.size[1]+31),'#'+str(img.flag_move_from_clusternum+1)+' -> #'+str(img.flag_move_to_clusternum+1))
+#                if img.sceneNum:
+#                    draw.text((x,y+im.size[1]+41),'scene num: '+str(img.sceneNum))
+#                if img.matched:
+                    # draw.rectangle((x, y+12, x+im.size[0], y+12+18), fill=(255,255,255))
+#                    draw.text((x,y+im.size[1]+11),img.matched.get_only_filename())
+#                    draw.text((x,y+im.size[1]+21),str(img.matching_qom))
+                x+=100+10
+            x=10
+            y+=140
+            n+=1
+
+        #out.show()
+        out.save("_output.jpg", "JPEG")
 
 def main():
     parser = OptionParser()
@@ -99,15 +150,34 @@ def main():
         shots = [Shot(s[0],s[1]) for s in r]
 
     for shot in shots:
-        median = shot.end-shot.start
-        shot.hist = parser.hsv_hist(median)
-        shot.surf = parser.surf(median)
-        print "[%d,%d], (%d) --- %d" % (shot.start,shot.end,median,shot.length())
-        #parser.save_frame_msec(shot.start + (shot.end-shot.start)/2)
+        shot.hist = parser.hsv_hist(shot.median())
+#        print shot.hist
+#        shot.surf = parser.surf(median)
+        print "[%d,%d], (%d) --- %d" % (shot.start,shot.end,shot.median(),shot.length())
+#        parser.save_frame_msec(shot.median())
 
     lengths = [s.length() for s in shots]
     print "SHOTS:",len(lengths)
     print "AVG LENGTH:",sum(lengths)/len(lengths)
+
+    print "--- Clustering ---"
+#    clusterable_shots = []
+#    for i in range(10):
+#        o = Clusterable()
+#        o.attributes['x'] = QuantityAttr(random.random(),1,10)
+#        o.attributes['y'] = QuantityAttr(random.random(),1,10)
+#        clusterable_shots.append(o)
+#    clusterable_shots = [Clusterable(attributes={"hist":CvHistAttr(shot.hist,1)}, source=shot) for shot in shots]
+
+
+
+    num_of_clusters = int(math.sqrt(len(shots)/2)) + 2
+    print "numer of clusters: %d" % num_of_clusters
+    initial_clusters=[[o] for o in random.sample(shots, num_of_clusters)]
+    print "initial clusters:", initial_clusters
+    clustering = KMeans(initial_clusters)
+    clustering.execute(shots)
+    draw_clusters(clustering.clusters, parser)
 
 
 if __name__ == "__main__":

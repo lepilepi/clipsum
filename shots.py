@@ -10,6 +10,13 @@ class Shot(object):
 
     def length(self):
         return self.end-self.start
+    
+    def median(self):
+        return self.start + (self.end-self.start)/2
+
+    def __repr__(self):
+        return "Shot([%s, %s])" % (str(self.start), str(self.end))
+
 
 class ShotDetector(object):
     shots = []

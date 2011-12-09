@@ -14,6 +14,7 @@ from cv import CV_CAP_PROP_FPS as FPS
 from cv import CV_CAP_PROP_FOURCC as PROP_FOURCC
 from datetime import datetime
 import sys
+import Image
 
 class VideoParser(object):
     def __init__(self, filename, start=None, end=None, step=1, verbose=True):
@@ -66,10 +67,6 @@ class VideoParser(object):
         frame = self._get_frame_msec(msec)
         img = GetMat(frame)
 
-        # hue varies from 0 (~0 deg red) to 180 (~360 deg red again */
-        # saturation varies from 0 (black-gray-white) to 255 (pure spectrum color)
-        ranges = [[0, 359], [0, 255]]
-
         #---- first image------------
         # Convert to HSV
         hsv = CreateImage(GetSize(img), 8, 3)
@@ -81,7 +78,9 @@ class VideoParser(object):
         Split(hsv, h_plane, s_plane, None, None)
         planes = [h_plane, s_plane]
 
-        hist = CreateHist([100, 100], CV_HIST_ARRAY, ranges, 1)
+        # hue varies from 0 (~0 deg red) to 180 (~360 deg red again */
+        # saturation varies from 0 (black-gray-white) to 255 (pure spectrum color)
+        hist = CreateHist([100, 100], CV_HIST_ARRAY, [[0, 359], [0, 255]], 1)
         CalcHist([GetImage(i) for i in planes], hist)
 
         return hist
