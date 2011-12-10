@@ -112,14 +112,7 @@ class CvHistAttr(Attribute):
         pass
 
     def compare(self,other):
-        print "----"
-        print self.value.hist
-        print other.value.hist
-        h = cv.CompareHist(self.value.hist, other.value.hist, cv.CV_COMP_CORREL)
-#        print "HISTDIFF:", h
-        return h
-#        return 0.4
-
+        return cv.CompareHist(self.value.hist, other.value.hist, cv.CV_COMP_CORREL)
 
 class ClusteringAlgorithm():
     clusters=[]
@@ -134,51 +127,7 @@ class ClusteringAlgorithm():
         pass
         
     def count_results_and_print_clustering(self,objects_num, verbose):
-        pass        
-    
-    def draw_clusters(self,results=None):
-        WIDTH = 1000
-        HEIGHT = 30
-        for cluster in self.clusters:
-            HEIGHT+=(int((len(cluster)*110)/WIDTH)+1)*110 + 70
-        
-        out = Image.new('RGBA', (WIDTH,HEIGHT))
-        draw = ImageDraw.Draw(out)
-        x=10
-        y=10
-        n=0
-        # for n, cluster in zip(range(len(self.clusters)), self.clusters):
-        for cluster in sorted(self.clusters,key= lambda cl: cl[0].get_only_num()):
-            draw.rectangle((0, y-2, WIDTH, y+12), fill=(0,0,250))
-            draw.text((x,y),'Cluster #%s (%s objects)' % (n+1,len(cluster)))
-            y+=20
-            for img in self.get_cluster_sorted(n):
-                if x>=WIDTH-110:
-                    x = 10
-                    y+= 140
-                im = Image.open(img.filename)
-                im.thumbnail((100,100), Image.ANTIALIAS)
-                if img.is_result:
-                    draw.rectangle(((x-5,y-5),(x+105,y+135)),255)
-                out.paste(im, (x,y+12))
-                
-                draw.text((x,y),img.get_only_filename())
-                if img.flag_move_to_clusternum:
-                    draw.text((x,y+im.size[1]+31),'#'+str(img.flag_move_from_clusternum+1)+' -> #'+str(img.flag_move_to_clusternum+1))
-                if img.sceneNum:
-                    draw.text((x,y+im.size[1]+41),'scene num: '+str(img.sceneNum))
-                if img.matched:
-                    # draw.rectangle((x, y+12, x+im.size[0], y+12+18), fill=(255,255,255))
-                    draw.text((x,y+im.size[1]+11),img.matched.get_only_filename())
-                    draw.text((x,y+im.size[1]+21),str(img.matching_qom))
-                x+=100+10
-            x=10
-            y+=140
-            n+=1
-                
-        #out.show()
-        out.save("_output.jpg", "JPEG")
-
+        pass
 
     def total_squared_error(self):
         e=0
@@ -232,7 +181,6 @@ class KMeans(ClusteringAlgorithm):
                     d = self.dist_from_refpoint(o,refpoint)
                     if d<min_distance:
                         min_distance = d
-    #                    min_distance = o.get_distance(rf)
                         closest_cluster = cluster
             
             try:
