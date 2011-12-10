@@ -207,45 +207,17 @@ class KMeans(ClusteringAlgorithm):
         else: return math.sqrt(s/n)
         
     def get_ref_point(self,cluster):
-        
-        ref_point={}
-        for o in cluster:
-            for k,v in o.attributes.items():
-                if k in ref_point:
-                    ref_point[k].add(v)
-                else:
-                    print "    deepcopy{"
-                    ref_point[k]=deepcopy(v)
-                    print "    }"
-
-        print "    divide_all{"
-        for k,v in ref_point.items():
-            ref_point[k].divide(len(cluster))
-        print "    }"
-
-
-        print "...trying to return..."
-        return ref_point
+        hist = [[sum([cv.QueryHistValue_2D(o.hist,x,y) for o in cluster])/len(cluster) for y in range(100)] for x in range(100)]
+        return {'hist':hist}
 
     def comp_hist(self,h1,h2):
         return cv.CompareHist(h1, h2, cv.CV_COMP_CHISQR) #CV_COMP_CORREL
     
-    def dist_from_cluster(self, o,cluster):
-        if not cluster: return Decimal('Infinity')
-#        s = [float(o.get_distance(e, True)) for e in cluster]
-#        l = len(cluster)
-#        print s
-#        print l
-#        return sum(s)/l
-
-
-        h = sum([self.comp_hist(o.hist,e.hist) for e in cluster if not e==o])/len(cluster)
-#        print "h:",h
-        return h
-
-
-#        return sum([float(o.attributes["hist"].compare(e.attribute["hist"])) for e in cluster])/len(cluster)
-
+    def dist_from_refpoint(self, o, refpoint):
+        H1 = lambda x,y:cv.QueryHistValue_2D(o.hist,x,y)
+        H2 = lambda x,y:refpoint['hist'][x][y]
+        chi_square = lambda x,y :  ((H1(x,y)-H2(x,y))**2/(H1(x,y)+H2(x,y))) if (H1(x,y)+H2(x,y)) else 0
+        return sum([chi_square(x,y) for x in range(100) for y in range(100)])
 
     def iterate(self,objects):
         changes = 0
@@ -253,16 +225,15 @@ class KMeans(ClusteringAlgorithm):
             min_distance=Decimal('Infinity')
             closest_cluster=None
             
-            for c in self.clusters:
-#                rf = self.get_ref_point(c)
+            for cluster in self.clusters:
+                if cluster:
+                    refpoint = self.get_ref_point(cluster)
 
-
-#                if o.get_distance(rf)<min_distance:
-                d = self.dist_from_cluster(o,c)
-                if d<min_distance:
-                    min_distance = d
-#                    min_distance = o.get_distance(rf)
-                    closest_cluster=c
+                    d = self.dist_from_refpoint(o,refpoint)
+                    if d<min_distance:
+                        min_distance = d
+    #                    min_distance = o.get_distance(rf)
+                        closest_cluster = cluster
             
             try:
                 closest_cluster.index(o)

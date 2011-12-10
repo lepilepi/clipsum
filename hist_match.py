@@ -130,18 +130,23 @@ if sys.argv[2] in ['show_all','show']:
 
     print h_bins, s_bins
 
+    H1 = lambda x,y:cv.QueryHistValue_2D(hist1,x,y)
+    H2 = lambda x,y:cv.QueryHistValue_2D(hist2,x,y)
+    chi_square = lambda x,y :  ((H1(x,y)-H2(x,y))**2/(H1(x,y)+H2(x,y))) if (H1(x,y)+H2(x,y)) else 0
+    print sum([chi_square(x,y) for x in range(100) for y in range(100)])
+
+    hist = [[sum([cv.QueryHistValue_2D(o,x,y) for o in [hist1]])/len([hist1]) for y in range(100)] for x in range(100)]
+    H1 = lambda x,y:hist[x][y]
+    H2 = lambda x,y:cv.QueryHistValue_2D(hist2,x,y)
+    chi_square = lambda x,y :  ((H1(x,y)-H2(x,y))**2/(H1(x,y)+H2(x,y))) if (H1(x,y)+H2(x,y)) else 0
+    print sum([chi_square(x,y) for x in range(100) for y in range(100)])
+
+
     print '--------------'
-    print dir(hist1)
-    print dir(hist1.bins)
-    print len(hist1.bins.tostring())
-    print len(hist2.bins.tostring())
-
-    h1b=hist1.bins.tostring()
-
-    import struct
-    print cv.QueryHistValue_2D(hist1,1,1)
+#    h1b=hist1.bins.tostring()
+#    import struct
 #    print struct.unpack('B', h1b[0])[0]
-    print struct.unpack("<L", h1b[0:4])[0]
+#    print struct.unpack("<L", h1b[0:4])[0]
 #    print hist1.bins.tostring()
 #    (_, max_value, _, _) = cv.GetMinMaxHistValue(hist)
 
