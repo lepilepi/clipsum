@@ -203,11 +203,13 @@ class KMeans(ClusteringAlgorithm):
 
     def iterate(self,objects):
         changes = 0
-        for o in objects:
+        for i,o in enumerate(objects):
+            print "   object %d/%d" % (i+1, len(objects))
             min_distance=Decimal('Infinity')
             closest_cluster=None
             
-            for cluster in self.clusters:
+            for i,cluster in enumerate(self.clusters):
+#                print "      cluster %d/%d" % (i,len(cluster))
                 if cluster:
                     refpoint = self.get_ref_point(cluster)
 
@@ -235,7 +237,7 @@ class KMeans(ClusteringAlgorithm):
         
     def execute(self, objects, verbose=True):
         for i in range(6):
-            if verbose: print "iteration", i
+            if verbose: print "=== iteration %d ===" % i
             ch = self.iterate(objects)
             if verbose: print ch, "changes"
             if ch==0: break

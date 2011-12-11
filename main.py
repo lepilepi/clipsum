@@ -153,11 +153,11 @@ def main():
         print "no shots detected"
         return
 
-    for shot in shots:
+    for i,shot in enumerate(shots):
         shot.hist = parser.hsv_hist(shot.median())
 #        shot.surf = parser.surf(shot.median())
-        print "[%d,%d], (%d) --- %d" % (shot.start,shot.end,shot.median(),shot.length())
-        parser.save_frame_msec(shot.median())
+        print "[%d,%d],\t(%d) --- %d\t(%d/%d)" % (shot.start,shot.end,shot.median(),shot.length(),i,len(shots))
+#        parser.save_frame_msec(shot.median())
 
     lengths = [s.length() for s in shots]
     print "SHOTS:",len(lengths)
