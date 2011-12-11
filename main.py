@@ -41,11 +41,11 @@ def update_meta_file(options):
     meta_file.write("ended at: %s\n" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S"))
     meta_file.close()
 
-def draw_clusters(clusters, parser, results=None):
+def draw_clusters(clusters, parser, results=[]):
         WIDTH = 1000
         HEIGHT = 30
         for cluster in clusters:
-            HEIGHT+=(int((len(cluster)*110)/WIDTH)+1)*110 + 70
+            HEIGHT+=(int((len(cluster)*100)/WIDTH)+1)*90 + 50
 
         HEIGHT += 200
 
@@ -68,11 +68,11 @@ def draw_clusters(clusters, parser, results=None):
 #                print shot.median()
 #                im = parser.PIL_frame_msec(shot.median())
                 im.thumbnail((100,100), Image.ANTIALIAS)
-#                if img.is_result:
-#                    draw.rectangle(((x-5,y-5),(x+105,y+135)),255)
+                if shot in results:
+                    draw.rectangle(((x-5,y-5),(x+105,y+85)),fill=(50,200,50))
                 out.paste(im, (x,y+12))
 
-                draw.text((x,y),str(shot.median()),fill=(0,0,0))
+                draw.text((x,y),str(int(shot.median())),fill=(0,0,0))
 #                if img.flag_move_to_clusternum:
 #                    draw.text((x,y+im.size[1]+31),'#'+str(img.flag_move_from_clusternum+1)+' -> #'+str(img.flag_move_to_clusternum+1))
 #                if img.sceneNum:
@@ -83,7 +83,7 @@ def draw_clusters(clusters, parser, results=None):
 #                    draw.text((x,y+im.size[1]+21),str(img.matching_qom))
                 x+=100+10
             x=10
-            y+=140
+            y+=90
             n+=1
 
         #out.show()
@@ -159,7 +159,7 @@ def main():
     for i,shot in enumerate(shots):
         shot.hist = parser.hsv_hist(shot.median())
 #        shot.surf = parser.surf(shot.median())
-        print "[%d,%d],\t(%d) --- %d\t(%d/%d)" % (shot.start,shot.end,shot.median(),shot.length(),i,len(shots))
+        print "[%d,%d],\t(%d) --- %d\t(%d/%d)" % (shot.start,shot.end,shot.median(),shot.length(),i+1,len(shots))
         parser.save_frame_msec(shot.median())
 
     lengths = [s.length() for s in shots]
@@ -183,7 +183,8 @@ def main():
     print "initial clusters:", initial_clusters
     clustering = KMeans(initial_clusters)
     clustering.execute(shots)
-    draw_clusters(clustering.clusters, parser)
+    print clustering.results
+    draw_clusters(clustering.clusters, parser, clustering.results)
 
 
 if __name__ == "__main__":
