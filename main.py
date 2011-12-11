@@ -101,6 +101,8 @@ def main():
                       help="start form this frame", metavar="FRAME")
     parser.add_option("--end", dest="end", type="int",
                       help="processing ends with this frame", metavar="FRAME")
+    parser.add_option("-r", "--repeat", dest="repeat", default=1, type="int",
+                      help="repeats of clusterings (default 1)", metavar="REPEAT")
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=True,
                       help="don't print status messages to stdout")
@@ -179,13 +181,24 @@ def main():
 
     num_of_clusters = int(math.sqrt(len(shots)/2)) + 2
     print "numer of clusters: %d" % num_of_clusters
-    initial_clusters=[[o] for o in random.sample(shots, num_of_clusters)]
-    print "initial clusters:", initial_clusters
-    clustering = KMeans(initial_clusters)
-    clustering.execute(shots)
-    print clustering.results
-    print clustering.total_squared_error()
-    draw_clusters(clustering.clusters, parser, clustering.results)
+
+    clusterings=[]
+    for i in range(options.repeat):
+        print "====== clustering #%d ======" % (i+1)
+        initial_clusters=[[o] for o in random.sample(shots, num_of_clusters)]
+        print "\tinitial clusters:", initial_clusters
+        clustering = KMeans(initial_clusters)
+        clustering.execute(shots)
+        print "\tresults:",clustering.results
+        print "\terror:",clustering.total_squared_error()
+
+        clusterings.append((clustering.total_squared_error(), clustering))
+
+    (best_error, best_clustering) = (min(clusterings)[0], min(clusterings)[1])
+    print "====== Best clustering ======"
+    print "\tbest results:",best_clustering.results
+    print "\tbest error:",best_clustering.total_squared_error()
+    draw_clusters(best_clustering.clusters, parser, best_clustering.results)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from copy import deepcopy
 from operator import attrgetter
 import cv
 from numpy import dot,arccos,matrix
+import sys
 
 def surf_match((kp1,d1), (kp2,d2)):
     desc1=matrix(d1)
@@ -196,7 +197,9 @@ class KMeans(ClusteringAlgorithm):
     def iterate(self,objects):
         changes = 0
         for i,o in enumerate(objects):
-            print "   object %d/%d" % (i+1, len(objects))
+
+            sys.stdout.write("\r\t\tobject %d/%d" % (i+1, len(objects)))
+            sys.stdout.flush()
             min_distance=Decimal('Infinity')
             closest_cluster=None
             
@@ -229,18 +232,23 @@ class KMeans(ClusteringAlgorithm):
         
     def execute(self, objects, verbose=True):
         for i in range(6):
-            if verbose: print "=== iteration %d ===" % (i+1)
+            if verbose: print "\titeration %d" % (i+1)
             ch = self.iterate(objects)
-            if verbose: print ch, "changes"
+            sys.stdout.write("\r\t\tOK                 \n")
+            sys.stdout.flush()
+            if verbose: print "\t\t%d changes" % ch
             if not ch: break
-            if verbose: print [len(c) for c in self.clusters]
+            if verbose: print "\t\t",[len(c) for c in self.clusters]
 
-        if verbose: print "=== extract results ==="
+        if verbose: print "\textract results"
         self.results = []
         for i,cluster in enumerate(self.clusters):
-            print "   cluster %d/%d" % (i+1,len(cluster))
+            sys.stdout.write("\r\t\tcluster %d/%d" % (i+1,len(cluster)))
+            sys.stdout.flush()
             refpoint = self.get_ref_point(cluster)
             self.results.append(min([(self.dist_from_refpoint(o,refpoint),o) for o in cluster])[1])
+        sys.stdout.write("\r\t\tOK                 \n")
+        sys.stdout.flush()
 
     def get_cluster_sorted(self,clusterNum):
         return sorted(self.clusters[clusterNum], key=attrgetter('filename'))
