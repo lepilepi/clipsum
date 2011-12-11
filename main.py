@@ -47,8 +47,11 @@ def draw_clusters(clusters, parser, results=None):
         for cluster in clusters:
             HEIGHT+=(int((len(cluster)*110)/WIDTH)+1)*110 + 70
 
+        HEIGHT += 200
+
         out = Image.new('RGBA', (WIDTH,HEIGHT))
         draw = ImageDraw.Draw(out)
+        draw.rectangle((0, 0, WIDTH, HEIGHT), fill=(255,255,255))
         x=10
         y=10
         n=0
@@ -69,7 +72,7 @@ def draw_clusters(clusters, parser, results=None):
 #                    draw.rectangle(((x-5,y-5),(x+105,y+135)),255)
                 out.paste(im, (x,y+12))
 
-                draw.text((x,y),str(shot.median()))
+                draw.text((x,y),str(shot.median()),fill=(0,0,0))
 #                if img.flag_move_to_clusternum:
 #                    draw.text((x,y+im.size[1]+31),'#'+str(img.flag_move_from_clusternum+1)+' -> #'+str(img.flag_move_to_clusternum+1))
 #                if img.sceneNum:
@@ -157,7 +160,7 @@ def main():
         shot.hist = parser.hsv_hist(shot.median())
 #        shot.surf = parser.surf(shot.median())
         print "[%d,%d],\t(%d) --- %d\t(%d/%d)" % (shot.start,shot.end,shot.median(),shot.length(),i,len(shots))
-#        parser.save_frame_msec(shot.median())
+        parser.save_frame_msec(shot.median())
 
     lengths = [s.length() for s in shots]
     print "SHOTS:",len(lengths)
