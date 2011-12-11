@@ -1,14 +1,7 @@
-import Image
-import ImageDraw
 import math
 from decimal import *
-from datetime import datetime
-from datetime import timedelta
 from copy import deepcopy
-from time import *
-from operator import itemgetter, attrgetter
-import re
-import os
+from operator import attrgetter
 import cv
 from numpy import dot,arccos,matrix
 
@@ -41,8 +34,7 @@ class Clusterable(object):
     def get_distance(self,other,from_object=False):
         # distance = sqrt(((P1-Q1)^2 + (P1-Q1)^2 + ... + (Pn-Qn)^2)/n)
         if from_object: other = other.attributes
-        s=0
-        n=0
+        (s,n)=(0,0)
         for (k,a1) in self.attributes.items():
             if other.get(k):
                 n+=1
@@ -51,7 +43,7 @@ class Clusterable(object):
                 d*=a1.weight
                 s+=d
         # ha nincsenek attributumai a 'self' kepnek, az 'other'-tol valo tavja legyen vegtelen
-        if n==0: return Decimal('Infinity')
+        if not n: return Decimal('Infinity')
         else: return math.sqrt(s/n)
 
     def __repr__(self):
@@ -153,8 +145,8 @@ class ClusteringAlgorithm():
     def total_squared_error(self):
         e=0
         for cluster in self.clusters:
-            rf = self.get_ref_point(cluster)
-            e+=sum([obj.get_distance(rf)**2 for obj in cluster])
+            refpoint = self.get_ref_point(cluster)
+            e+=sum([self.dist_from_refpoint(o,refpoint)**2 for o in cluster])
         return e
         
 class KMeans(ClusteringAlgorithm):
@@ -173,7 +165,7 @@ class KMeans(ClusteringAlgorithm):
                 d=(a1.compare(a2))**2
                 d*=a1.weight
                 s+=d
-        if n==0: return Decimal('Infinity')
+        if not n: return Decimal('Infinity')
         else: return math.sqrt(s/n)
         
     def get_ref_point(self,cluster):
@@ -240,7 +232,7 @@ class KMeans(ClusteringAlgorithm):
             if verbose: print "=== iteration %d ===" % (i+1)
             ch = self.iterate(objects)
             if verbose: print ch, "changes"
-            if ch==0: break
+            if not ch: break
             if verbose: print [len(c) for c in self.clusters]
 
         if verbose: print "=== extract results ==="
@@ -250,12 +242,6 @@ class KMeans(ClusteringAlgorithm):
             refpoint = self.get_ref_point(cluster)
             self.results.append(min([(self.dist_from_refpoint(o,refpoint),o) for o in cluster])[1])
 
-        #~ top_cluster = max([(len(c),c) for c in self.clusters])[1]
-        #~ ref_point = self.get_ref_point(top_cluster)
-        #~ closest_to_ref_point = min([(o.get_distance(ref_point),o) for o in top_cluster])[1]
-        #~ return closest_to_ref_point        
-    
-     
     def get_cluster_sorted(self,clusterNum):
         return sorted(self.clusters[clusterNum], key=attrgetter('filename'))
     
@@ -270,38 +256,6 @@ class KMeans(ClusteringAlgorithm):
         ref_point = self.get_ref_point(cluster)
         # print len(cluster)
         return min([(o.get_distance(ref_point),o) for o in cluster])[1]
-    
-#    def count_results_and_print_clustering(self,objects_num, verbose):
-#        # tisztogatas, nullazasok, ha tobbszor hivjuk
-#
-#        '''
-#        # ures clustereket torlom a clusterek kozul
-#        flags_delete = []
-#        for counter, cluster in enumerate(self.clusters):
-#            if len(cluster) < 1: flags_delete.append(counter)
-#        for del_num in reversed(flags_delete):
-#            del self.clusters[del_num]
-#        '''
-#        # is_result, azaz kivalasztott kep tul is torlom, ujraklaszterezes esetere
-#        for cluster in self.clusters:
-#            for i in cluster:
-#                i.is_result = False
-#
-#        min_size = int(math.ceil(objects_num*settings.MIN_SIZE_OF_RELEVANT_CLUSTER))
-#        if verbose: print 'Min cluster size for thumbnail: ' + str(min_size)
-#        for counter,c in enumerate(self.clusters):
-#            if len(c)>0 and len(c)>=min_size:
-#                closest_to_ref_point_img = self.get_closest_to_ref_point(c)
-#                closest_to_ref_point_img.is_result = True
-#
-#                if verbose: print 'Cluster #%s size: %s ---> %s' % (str(counter+1), str(len(c)), closest_to_ref_point_img.get_only_filename())
-#            else:
-#                if verbose: print 'Cluster #%s size: %s' % (str(counter+1), str(len(c)))
-        
-    def print_error(self,string):
-        print '-----------------------------------'
-        print string+' '+str(self.total_squared_error())
-        print '-----------------------------------\n'        
         
     def print_chosens(self, verbose):
         results = []

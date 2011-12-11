@@ -184,6 +184,7 @@ def main():
     clustering = KMeans(initial_clusters)
     clustering.execute(shots)
     print clustering.results
+    print clustering.total_squared_error()
     draw_clusters(clustering.clusters, parser, clustering.results)
 
 
