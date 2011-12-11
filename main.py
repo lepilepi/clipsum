@@ -92,11 +92,11 @@ def main():
                       help="input video file", metavar="FILE")
     parser.add_option("-o", "--output", dest="output_file",
                       help="output csv file", metavar="FILE")
-    parser.add_option("-s", "--step", dest="step", default=1,
+    parser.add_option("-s", "--step", dest="step", default=1, type="int",
                       help="frame stepping parameter (default 1; all the frames)", metavar="STEP")
-    parser.add_option("--start", dest="start",
+    parser.add_option("--start", dest="start", type="int",
                       help="start form this frame", metavar="FRAME")
-    parser.add_option("--end", dest="end",
+    parser.add_option("--end", dest="end", type="int",
                       help="processing ends with this frame", metavar="FRAME")
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=True,
@@ -149,12 +149,15 @@ def main():
         print "Shots CSV file exists, skip shot detection..."
         shots = [Shot(s[0],s[1]) for s in r]
 
+    if not shots:
+        print "no shots detected"
+        return
+
     for shot in shots:
         shot.hist = parser.hsv_hist(shot.median())
-#        print shot.hist
-#        shot.surf = parser.surf(median)
+#        shot.surf = parser.surf(shot.median())
         print "[%d,%d], (%d) --- %d" % (shot.start,shot.end,shot.median(),shot.length())
-#        parser.save_frame_msec(shot.median())
+        parser.save_frame_msec(shot.median())
 
     lengths = [s.length() for s in shots]
     print "SHOTS:",len(lengths)

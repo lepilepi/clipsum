@@ -10,6 +10,27 @@ from operator import itemgetter, attrgetter
 import re
 import os
 import cv
+from numpy import dot,arccos,matrix
+
+def surf_match((kp1,d1), (kp2,d2)):
+    desc1=matrix(d1)
+    desc2=matrix(d2)
+
+    dist_ratio = 0.7 # 0.6 0.7? 0.8?
+    matchscores = {}
+    dotprods = dot(desc1,desc2.getT()) #vector of dot products
+    #dotprods = 0.9999*dotprods
+
+    #inverse cosine and sort, return index for features in second image
+    angles = arccos(dotprods)
+
+    for i,row in enumerate(angles):
+        perm = row.getA().argsort()[0]
+        r = row.getA()[0]
+        if r[perm[0]] < dist_ratio * r[perm[1]] and kp1[i][1]==kp2[perm[0]][1]:
+            matchscores[i] = perm[0]
+
+    return matchscores
 
 class Clusterable(object):
 
@@ -158,15 +179,27 @@ class KMeans(ClusteringAlgorithm):
     def get_ref_point(self,cluster):
         hist = [[sum([cv.QueryHistValue_2D(o.hist,x,y) for o in cluster])/len(cluster) for y in range(100)] for x in range(100)]
         return {'hist':hist}
+#        keypoints, descriptors = [], []
+#        map(keypoints.extend,[o.surf[0] for o in cluster])
+#        map(descriptors.extend,[o.surf[1] for o in cluster])
+#        return {'surf':(keypoints, descriptors)}
 
-    def comp_hist(self,h1,h2):
-        return cv.CompareHist(h1, h2, cv.CV_COMP_CHISQR) #CV_COMP_CORREL
-    
     def dist_from_refpoint(self, o, refpoint):
         H1 = lambda x,y:cv.QueryHistValue_2D(o.hist,x,y)
         H2 = lambda x,y:refpoint['hist'][x][y]
         chi_square = lambda x,y :  ((H1(x,y)-H2(x,y))**2/(H1(x,y)+H2(x,y))) if (H1(x,y)+H2(x,y)) else 0
         return sum([chi_square(x,y) for x in range(100) for y in range(100)])
+
+#        matches = surf_match(refpoint['surf'], o.surf)
+#        (keypoints1, descriptors1) = refpoint['surf']
+#        (keypoints2, descriptors2) = o.surf
+#        Ks = len(descriptors1)
+#        Kc = len(descriptors2)
+#        Km = len(matches)
+#        qom=1.0/(float(Km)/Ks)*100*(float(Kc)/Ks)*100
+#        qom = Km and 1.0/max(Ks,Kc)/Km*1000 or 0
+#        print "s:%d, c:%d,  m:%d qom:%f" % (Ks,Kc,Km,qom)
+#        return qom
 
     def iterate(self,objects):
         changes = 0
