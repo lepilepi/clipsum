@@ -126,7 +126,7 @@ class CvHistAttr(Attribute):
         pass
 
     def compare(self,other):
-        return cv.CompareHist(self.value.hist, other.value.hist, cv.CV_COMP_CORREL)
+        return cv.CompareHist(self.value.hist, other.value.hist, cv.CV_COMP_CHISQR)
 
 class ClusteringAlgorithm():
     clusters=[]

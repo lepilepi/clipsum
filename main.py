@@ -7,6 +7,7 @@ import random
 import Image
 import ImageDraw
 from clustering import Clusterable, CvHistAttr, KMeans, QuantityAttr
+from k_means_plus_plus import do_kmeans_plus_plus
 from shots import ShotDetector, Shot
 from videoparser import VideoParser
 
@@ -185,7 +186,8 @@ def main():
     clusterings=[]
     for i in range(options.repeat):
         print "====== clustering #%d ======" % (i+1)
-        initial_clusters=[[o] for o in random.sample(shots, num_of_clusters)]
+#        initial_clusters=[[o] for o in random.sample(shots, num_of_clusters)]
+        initial_clusters=do_kmeans_plus_plus(shots, num_of_clusters)
         print "\tinitial clusters:", initial_clusters
         clustering = KMeans(initial_clusters)
         clustering.execute(shots)
