@@ -1,3 +1,7 @@
+#!/usr/bin/python
+# -*- coding: utf8 -*-
+
+from mpl_toolkits.axes_grid1.parasite_axes import host_subplot
 from pylab import *
 from numpy import array, diff
 import csv,sys
@@ -38,13 +42,19 @@ dev_array = abs(diff(diff_array))
 mean_diff = array(diff_array, dtype=float).mean()
 mean_dev = array(dev_array, dtype=float).mean()
 
+host = host_subplot(111)
+#par = host.twiny()
+
+host.set_xlabel(u"idő (ms)")
+host.set_ylabel(u"elétérés (pixel érték)")
+
 #plot diff_array
-plot(msec_array, diff_array, color='r')
-plot(msec_array[:len(diff_array)], [mean_diff*5 for i in range(len(diff_array))], color='r')
+host.plot(msec_array, diff_array, color='r')
+#plot(msec_array[:len(diff_array)], [mean_diff*5 for i in range(len(diff_array))], color='r')
 
 #plot dev_array
-plot(msec_array[:-1], dev_array, color='y')
-plot(msec_array[:len(dev_array)], [mean_dev*5 for i in range(len(dev_array))], color='y')
+host.plot(msec_array[:-1], dev_array, color='b')
+host.plot(msec_array[:len(dev_array)], [mean_dev*5 for i in range(len(dev_array))], color='b')
 
 plt.grid(True)
 
