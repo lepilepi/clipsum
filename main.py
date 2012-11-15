@@ -80,10 +80,6 @@ def calc_hist_for_shot((shot, parser)):
 
 def main():
     parser = OptionParser()
-    parser.add_option("-i", "--input", dest="input_file",
-                      help="input video file", metavar="FILE")
-    parser.add_option("-o", "--output", dest="output_file",
-                      help="output csv file", metavar="FILE")
     parser.add_option("-s", "--step", dest="step", default=1, type="int",
                       help="frame stepping parameter (default 1; all the frames)", metavar="STEP")
     parser.add_option("--start", dest="start", type="int",
@@ -97,14 +93,16 @@ def main():
                       help="don't print status messages to stdout")
     (options, args) = parser.parse_args()
 
-    if not options.output_file or not options.input_file:
-        parser.error("Input and output file parameters are required!")
+    if not len(args):
+        parser.error("no input video file specified")
 
-    parser = VideoParser(options.input_file, start=options.start,
+    filename = args[0]
+
+    parser = VideoParser(filename, start=options.start,
                      end=options.end, step=options.step, verbose=options.verbose)
 
 
-    project = ProjectInfo(options.input_file)
+    project = ProjectInfo(filename)
 
     # frame diff extraction
     if project.status == ProjectInfo.INITIAL:
