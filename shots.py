@@ -1,10 +1,9 @@
 from numpy import array, diff
 from dbscan import DBScan
 
-def extract_shots(self, data):
+def extract_shots(data):
 
-    if len(self.shots):
-        return self.shots
+    shots = []
 
     msec_array = [row[1] for row in data]
     diff_array = [float(row[2]) for row in data]
@@ -20,9 +19,9 @@ def extract_shots(self, data):
     centroids = [float(sum([e for e in c])) / len(c) for c in clusters]
 
     for i in range(len(centroids)-1):
-        self.shots.append(Shot(centroids[i],centroids[i+1]))
+        shots.append(Shot(centroids[i],centroids[i+1]))
 
-    return self.shots
+    return shots
 
 class Shot(object):
     def __init__(self, start, end, hist=None, surf=None):
