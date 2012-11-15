@@ -161,6 +161,8 @@ class VideoParser(object):
                 ))
             sys.stdout.flush()
 
+        print 'ok'
+
     def merge_shots(self,filename,shots):
         self.get_capture()
         

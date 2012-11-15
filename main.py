@@ -3,16 +3,15 @@ from datetime import datetime
 from operator import attrgetter
 from optparse import OptionParser
 import math
-import random
 import Image
 import ImageDraw
-from clustering import Clusterable, CvHistAttr, KMeans, QuantityAttr
+from clustering import KMeans
+from database import ProjectInfo
 from k_means_plus_plus import do_kmeans_plus_plus
 from shots import extract_shots, Shot
 from videoparser import VideoParser
-from multiprocessing import Pool,cpu_count
+from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
-import threading
 
 class ResultWriter(object):
     def __init__(self, file):
@@ -24,26 +23,6 @@ class ResultWriter(object):
 
     def close(self):
         self.file.close()
-
-def create_meta_file(options):
-    start_time = datetime.now()
-    meta_file = open(options.output_file + '.META', 'wb')
-    meta_file.write('video file: %s\n' % options.input_file)
-    meta_file.write('csv file: %s\n' % options.output_file)
-    meta_file.write('start_frame: %s\n' % options.start)
-    meta_file.write('end_frame: %s\n' % options.end)
-    meta_file.write('step: %s\n' % options.step)
-    if (options.step and options.start and options.end):
-        meta_file.write("total frames: %d\n" % (((options.end-options.step+1)-options.start)/options.step))
-    else:
-        meta_file.write("total frames: unknown\n")
-    meta_file.write("started at: %s\n" % start_time.strftime("%Y.%m.%d. %H:%M:%S"))
-    meta_file.close()
-
-def update_meta_file(options):
-    meta_file = open(options.output_file + '.META', 'ab')
-    meta_file.write("ended at: %s\n" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S"))
-    meta_file.close()
 
 def draw_clusters(clusters, parser, results=[]):
         WIDTH = 1000
@@ -124,55 +103,44 @@ def main():
     parser = VideoParser(options.input_file, start=options.start,
                      end=options.end, step=options.step, verbose=options.verbose)
 
-    try:
-        open(options.output_file)
-    except IOError:
-        #csv file does not exist, we need to parse the video
 
-        #setup csv, open file
-        writer = ResultWriter(options.output_file)
-        create_meta_file(options)
+    project = ProjectInfo(options.input_file)
 
-        #parse the video
-        parser.parse(writer.write_to_csv)
+    # frame diff extraction
+    if project.status == ProjectInfo.INITIAL:
+        print 'Start video parsing'
 
-        writer.close()
-        update_meta_file(options)
+        # parse the video
+        parser.parse(project.add_frame)
+
+        print "Completed on %s" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S")
 
         #end of process
-        sys.stdout.write("\r OK")
-        sys.stdout.flush()
-        print "\nCompleted on %s" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S")
-
+        project.status = ProjectInfo.FRAMES_PARSED
     else:
-        print "Frames CSV file exists, skip video parsing..."
+        print "Frames are already parsed, skip..."
 
-    #shot detetion
-    try:
-        r=csv.reader(open(options.output_file.split('.csv')[0]+"_SHOTS.csv"))
-    except IOError:
-        #csv file does not exist, we need to create shots
+    # shot detetion
+    if project.status == ProjectInfo.FRAMES_PARSED:
+        print 'Start shot detection'
 
-        r=csv.reader(open(options.output_file))
-        data = [row for row in r]
+        data = [row for row in project.frames]
         shots = extract_shots(data)
 
-        writer = ResultWriter(options.output_file.split('.csv')[0]+"_SHOTS.csv")
-        map(writer.write_to_csv,[[s.start,s.end,s.length()] for s in shots])
-        writer.close()
+        map(project.add_shot,[[s.start,s.end,s.length()] for s in shots])
+
+        print 'ok'
+        project.status = ProjectInfo.SHOTS_EXTRACTED
     else:
-        print "Shots CSV file exists, skip shot detection..."
-        shots = [Shot(s[0],s[1]) for s in r]
+        print "Shot boundaries were already detected, skip..."
+        shots = [Shot(s[0],s[1]) for s in project.shots]
 
     if not shots:
         print "no shots detected"
         return
 
-
     print "Calculation shot histograms..."
 
-
-    s = datetime.now()
 
     # calculates histograms
     pool = ThreadPool(processes=cpu_count())
@@ -185,14 +153,6 @@ def main():
     print "AVG LENGTH:",sum(lengths)/len(lengths)
 
     print "--- Clustering ---"
-#    clusterable_shots = []
-#    for i in range(10):
-#        o = Clusterable()
-#        o.attributes['x'] = QuantityAttr(random.random(),1,10)
-#        o.attributes['y'] = QuantityAttr(random.random(),1,10)
-#        clusterable_shots.append(o)
-#    clusterable_shots = [Clusterable(attributes={"hist":CvHistAttr(shot.hist,1)}, source=shot) for shot in shots]
-
 
 
     num_of_clusters = int(math.sqrt(len(shots)/2)) + 2
