@@ -8,7 +8,7 @@ import Image
 import ImageDraw
 from clustering import Clusterable, CvHistAttr, KMeans, QuantityAttr
 from k_means_plus_plus import do_kmeans_plus_plus
-from shots import ShotDetector, Shot
+from shots import extract_shots, Shot
 from videoparser import VideoParser
 from multiprocessing import Pool,cpu_count
 from multiprocessing.pool import ThreadPool
@@ -155,7 +155,7 @@ def main():
 
         r=csv.reader(open(options.output_file))
         data = [row for row in r]
-        shots = ShotDetector().detect(data)
+        shots = extract_shots(data)
 
         writer = ResultWriter(options.output_file.split('.csv')[0]+"_SHOTS.csv")
         map(writer.write_to_csv,[[s.start,s.end,s.length()] for s in shots])
