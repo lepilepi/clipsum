@@ -1,3 +1,4 @@
+import os
 from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame
 from cv import SaveImage, Copy, GrabFrame, CreateVideoWriter, WriteFrame,RetrieveFrame
 from cv import CreateMat, CvtColor, AbsDiff, Sum, CV_8U, CV_8UC1, CV_8UC3
@@ -58,9 +59,12 @@ class VideoParser(object):
         return self.capture
 
     def save_frame_msec(self, msec):
-        self.get_capture()
-        img = self._get_frame_msec(msec)
-        SaveImage('%s.%d.jpg' % (self.filename.split('.')[0],msec), img)
+        file_name = 'shots/%s.%d.jpg' % (self.filename.split('.')[0],msec)
+
+        if not os.path.exists(file_name):
+            self.get_capture()
+            img = self._get_frame_msec(msec)
+            SaveImage(file_name, img)
 
     def hsv_hist(self, msec):
         self.get_capture()
@@ -113,7 +117,7 @@ class VideoParser(object):
         self._log("From %d ms" % self._get_msec_pos())
 
         #save the LAST image form the video
-        img = self._get_frame(self.end-self.step+1)
+        img = self._get_frame(self.end-self.step)
         SaveImage('img/end_%d.jpg' % (self.end-self.step+1), img)
         self._log("To %d ms" % self._get_msec_pos())
 
@@ -137,7 +141,13 @@ class VideoParser(object):
             #CvtColor(img, grayscaled_image2, BGR2GRAY)
 
             #calculate absolute difference
-            AbsDiff(img, buffer ,difference_image)
+            try:
+                AbsDiff(img, buffer ,difference_image)
+            except Exception, e:
+                print "ERROR:", e
+                print img
+                print buffer
+                print difference_image
             abs_diff = Sum(difference_image)[0]
 
             #---invoke the callback function---

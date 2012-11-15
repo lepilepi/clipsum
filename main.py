@@ -10,6 +10,9 @@ from clustering import Clusterable, CvHistAttr, KMeans, QuantityAttr
 from k_means_plus_plus import do_kmeans_plus_plus
 from shots import ShotDetector, Shot
 from videoparser import VideoParser
+from multiprocessing import Pool,cpu_count
+from multiprocessing.pool import ThreadPool
+import threading
 
 class ResultWriter(object):
     def __init__(self, file):
@@ -46,7 +49,7 @@ def draw_clusters(clusters, parser, results=[]):
         WIDTH = 1000
         HEIGHT = 30
         for cluster in clusters:
-            HEIGHT+=(int((len(cluster)*100)/WIDTH)+1)*90 + 50
+            HEIGHT+=(int((len(cluster.objects)*100)/WIDTH)+1)*90 + 50
 
         HEIGHT += 200
 
@@ -59,13 +62,13 @@ def draw_clusters(clusters, parser, results=[]):
         # for n, cluster in zip(range(len(self.clusters)), self.clusters):
         for cluster in sorted(clusters):
             draw.rectangle((0, y-2, WIDTH, y+12), fill=(0,0,250))
-            draw.text((x,y),'Cluster #%s (%s objects)' % (n+1,len(cluster)))
+            draw.text((x,y),'Cluster #%s (%s objects)' % (n+1,len(cluster.objects)))
             y+=20
             for shot in sorted(clusters[n], key=attrgetter('length')):
                 if x>=WIDTH-110:
                     x = 10
                     y+= 140
-                im = Image.open('%s.%d.jpg' % (parser.filename.split('.')[0], shot.median()))
+                im = Image.open('shots/%s.%d.jpg' % (parser.filename.split('.')[0], shot.median()))
 #                print shot.median()
 #                im = parser.PIL_frame_msec(shot.median())
                 im.thumbnail((100,100), Image.ANTIALIAS)
@@ -89,6 +92,12 @@ def draw_clusters(clusters, parser, results=[]):
 
         #out.show()
         out.save("_output.jpg", "JPEG")
+
+def calc_hist_for_shot((shot, parser)):
+    #shot.surf = parser.surf(shot.median())
+    parser.save_frame_msec(shot.median())
+    shot.hist =  parser.hsv_hist(shot.median())
+    
 
 def main():
     parser = OptionParser()
@@ -137,7 +146,7 @@ def main():
 
     else:
         print "Frames CSV file exists, skip video parsing..."
-        
+
     #shot detetion
     try:
         r=csv.reader(open(options.output_file.split('.csv')[0]+"_SHOTS.csv"))
@@ -159,11 +168,17 @@ def main():
         print "no shots detected"
         return
 
-    for i,shot in enumerate(shots):
-        shot.hist = parser.hsv_hist(shot.median())
-#        shot.surf = parser.surf(shot.median())
-        print "[%d,%d],\t(%d) --- %d\t(%d/%d)" % (shot.start,shot.end,shot.median(),shot.length(),i+1,len(shots))
-        parser.save_frame_msec(shot.median())
+
+    print "Calculation shot histograms..."
+
+
+    s = datetime.now()
+
+    # calculates histograms
+    pool = ThreadPool(processes=cpu_count())
+    p_shots=map(lambda x:(x, parser),shots)
+
+    pool.map(calc_hist_for_shot, p_shots)
 
     lengths = [s.length() for s in shots]
     print "SHOTS:",len(lengths)

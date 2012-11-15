@@ -5,6 +5,7 @@ from operator import attrgetter
 import cv
 from numpy import dot,arccos,matrix
 import sys
+from datetime import datetime
 
 def surf_match((kp1,d1), (kp2,d2)):
     desc1=matrix(d1)
@@ -25,6 +26,36 @@ def surf_match((kp1,d1), (kp2,d2)):
             matchscores[i] = perm[0]
 
     return matchscores
+
+class Cluster(object):
+    def __init__(self, objects=[]):
+        self.objects = objects
+        self.centroid = None
+
+    def add(self, o):
+        self.objects.append(o)
+        self.centroid = None
+
+    def remove(self, o):
+        if o in self:
+            self.objects.remove(o)
+            self.centroid = None
+
+    def __contains__(self, o):
+        return o in self.objects
+
+    def __iter__(self):
+        return iter(self.objects)
+
+    def get_centroid(self):
+        if not self.centroid:
+            self.centroid = [[sum([cv.QueryHistValue_2D(o.hist,x,y) for o in self.objects])/len(self.objects) for y in range(100)] for x in range(100)]
+        return self.centroid
+    #        keypoints, descriptors = [], []
+    #        map(keypoints.extend,[o.surf[0] for o in cluster])
+    #        map(descriptors.extend,[o.surf[1] for o in cluster])
+    #        return {'surf':(keypoints, descriptors)}
+
 
 class Clusterable(object):
 
@@ -132,9 +163,9 @@ class ClusteringAlgorithm():
     clusters=[]
     
     def __init__(self, clusters):
-        self.clusters= clusters
-        
-    def get_ref_point(self,cluster):
+        self.clusters = [Cluster(objects) for objects in clusters]
+
+    def get_centroid(self,cluster):
         pass
     
     def execute(self, objects, verbose):
@@ -146,10 +177,10 @@ class ClusteringAlgorithm():
     def total_squared_error(self):
         e=0
         for cluster in self.clusters:
-            refpoint = self.get_ref_point(cluster)
-            e+=sum([self.dist_from_refpoint(o,refpoint)**2 for o in cluster])
+            centroid = cluster.get_centroid()
+            e+=sum([self.dist_from_centroid(o,centroid)**2 for o in cluster.objects])
         return e
-        
+
 class KMeans(ClusteringAlgorithm):
     
     def make_initial_cluster(self):
@@ -169,17 +200,10 @@ class KMeans(ClusteringAlgorithm):
         if not n: return Decimal('Infinity')
         else: return math.sqrt(s/n)
         
-    def get_ref_point(self,cluster):
-        hist = [[sum([cv.QueryHistValue_2D(o.hist,x,y) for o in cluster])/len(cluster) for y in range(100)] for x in range(100)]
-        return {'hist':hist}
-#        keypoints, descriptors = [], []
-#        map(keypoints.extend,[o.surf[0] for o in cluster])
-#        map(descriptors.extend,[o.surf[1] for o in cluster])
-#        return {'surf':(keypoints, descriptors)}
 
-    def dist_from_refpoint(self, o, refpoint):
+    def dist_from_centroid(self, o, centroid):
         H1 = lambda x,y:cv.QueryHistValue_2D(o.hist,x,y)
-        H2 = lambda x,y:refpoint['hist'][x][y]
+        H2 = lambda x,y:centroid[x][y]
         chi_square = lambda x,y :  ((H1(x,y)-H2(x,y))**2/(H1(x,y)+H2(x,y))) if (H1(x,y)+H2(x,y)) else 0
         return sum([chi_square(x,y) for x in range(100) for y in range(100)])
 
@@ -202,51 +226,50 @@ class KMeans(ClusteringAlgorithm):
             sys.stdout.flush()
             min_distance=Decimal('Infinity')
             closest_cluster=None
-            
-            for i,cluster in enumerate(self.clusters):
-#                print "      cluster %d/%d" % (i,len(cluster))
-                if cluster:
-                    refpoint = self.get_ref_point(cluster)
 
-                    d = self.dist_from_refpoint(o,refpoint)
+            for cluster in self.clusters:
+                if cluster:
+                    centroid = cluster.get_centroid()
+
+                    d = self.dist_from_centroid(o,centroid)
                     if d<min_distance:
                         min_distance = d
                         closest_cluster = cluster
-            
-            try:
-                closest_cluster.index(o)
-            except ValueError:
+
+            if o not in closest_cluster:
                 #kivesz mindenhonnan
-                for cl in self.clusters:
-                    try:
-                        cl.remove(o)
-                        #print '%s-t kivesz #%s-bol' % (o.filename,self.clusters.index(cl))
-                    except ValueError:
-                        pass
+                [cluster.remove(o) for cluster in self.clusters]
+
                 #beletesz ide
-                closest_cluster.append(o)
-                #print '%s-t betesz #%s-be' % (o.filename,self.clusters.index(closest_cluster))
+                closest_cluster.add(o)
+
                 changes+=1
-                
+
         return changes
         
     def execute(self, objects, verbose=True):
-        for i in range(6):
+
+        for i in range(1): #6 !!!!!!!!!!
             if verbose: print "\titeration %d" % (i+1)
-            ch = self.iterate(objects)
+
+            start_time = datetime.now()
+            changes = self.iterate(objects)
+            end_time = datetime.now()
+            print "Time elapsed: %d.%d" % ((end_time-start_time).seconds, (end_time-start_time).microseconds)
+
             sys.stdout.write("\r\t\tOK                 \n")
             sys.stdout.flush()
-            if verbose: print "\t\t%d changes" % ch
-            if not ch: break
-            if verbose: print "\t\t",[len(c) for c in self.clusters]
+            if verbose: print "\t\t%d changes" % changes
+            if not changes: break
+            if verbose: print "\t\t",[len(c.objects) for c in self.clusters]
 
         if verbose: print "\textract results"
         self.results = []
         for i,cluster in enumerate(self.clusters):
-            sys.stdout.write("\r\t\tcluster %d/%d" % (i+1,len(cluster)))
+            sys.stdout.write("\r\t\tcluster %d/%d" % (i+1,len(cluster.objects)))
             sys.stdout.flush()
-            refpoint = self.get_ref_point(cluster)
-            self.results.append(min([(self.dist_from_refpoint(o,refpoint),o) for o in cluster])[1])
+            centroid = cluster.get_centroid()
+            self.results.append(min([(self.dist_from_centroid(o,centroid),o) for o in cluster.objects])[1])
         sys.stdout.write("\r\t\tOK                 \n")
         sys.stdout.flush()
 
@@ -260,28 +283,7 @@ class KMeans(ClusteringAlgorithm):
         for del_num in reversed(flags_delete):
             del self.clusters[del_num]
     
-    def get_closest_to_ref_point(self,cluster):
-        ref_point = self.get_ref_point(cluster)
+    def get_closest_to_centroid(self,cluster):
+        centroid = cluster.get_centroid()
         # print len(cluster)
-        return min([(o.get_distance(ref_point),o) for o in cluster])[1]
-        
-    def print_chosens(self, verbose):
-        results = []
-        for c in self.clusters:
-            for i in c:
-                if i.is_result: results.append(i)        
-        
-        # kivettem nem tom mi.. ha nincs eredmeny egy sem? miert?
-        # if len(results)==0:
-            # max_cluster = max([(len(c),c,counter) for (counter,c) in enumerate(self.clusters)])
-            # top_cluster = max_cluster[1]
-            # ref_point = self.get_ref_point(top_cluster)
-            # closest_to_ref_point = min([(o.get_distance(ref_point),o) for o in top_cluster])[1]            
-            # closest_to_ref_point.is_result = True
-            # results = [closest_to_ref_point]
-            # if verbose: print 'Cluster #%s size: %s ---> %s' % (max_cluster[2]+1, str(len(top_cluster)), closest_to_ref_point.get_only_filename())        
-        
-        if verbose:print 'Chosen pictures:'
-        if verbose:
-            for r in results:
-                print r.get_only_filename()
+        return min([(o.get_distance(centroid),o) for o in cluster])[1]
