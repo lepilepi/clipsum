@@ -3,4 +3,4 @@ img
 output
 vid
 *.pyc
-
+.DS_Store
