@@ -131,7 +131,9 @@ def main():
         project.status = ProjectInfo.SHOTS_EXTRACTED
     else:
         print "Shot boundaries were already detected, skip..."
-        shots = [Shot(s[0],s[1]) for s in project.shots]
+
+
+    shots = [Shot(s[1],s[2], id=s[0]) for s in project.shots]
 
     if not shots:
         print "no shots detected"

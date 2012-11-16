@@ -24,9 +24,10 @@ def extract_shots(data):
     return shots
 
 class Shot(object):
-    def __init__(self, start, end, hist=None, surf=None):
+    def __init__(self, start, end, id=None, hist=None, surf=None):
         self.start = float(start)
         self.end = float(end)
+        self.id = id
         if hist: self.hist = hist
         if surf: self.surf = surf
 
@@ -37,7 +38,7 @@ class Shot(object):
         return self.start + (self.end-self.start)/2
 
     def __repr__(self):
-        return "Shot([%s, %s])" % (str(self.start), str(self.end))
+        return "Shot#%d([%s, %s])" % (self.id, str(self.start), str(self.end))
 
 
 

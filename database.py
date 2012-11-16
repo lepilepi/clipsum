@@ -23,7 +23,7 @@ class ProjectInfo(object):
         try:
             self.c.execute("SELECT * FROM project_info")
         except self.conn.OperationalError:
-            self.c.execute("CREATE TABLE project_info (filename text, status integer)")
+            self.c.execute("CREATE TABLE project_info (filename text, status INTEGER)")
             self.c.execute("INSERT INTO project_info VALUES ('', 0)")
             self.conn.commit()
 
@@ -31,14 +31,42 @@ class ProjectInfo(object):
         try:
             self.c.execute("SELECT * FROM frames")
         except self.conn.OperationalError:
-            self.c.execute("CREATE TABLE frames (n integer UNIQUE, pos real, diff integer)")
+            self.c.execute("CREATE TABLE frames (n INTEGER UNIQUE, pos REAL, diff INTEGER)")
             self.conn.commit()
 
         # sets up shots table to store frame differences
         try:
             self.c.execute("SELECT * FROM shots")
         except self.conn.OperationalError:
-            self.c.execute("CREATE TABLE shots (id INTEGER PRIMARY KEY AUTOINCREMENT, start real, end real, length real)")
+            self.c.execute("CREATE TABLE shots (id INTEGER PRIMARY KEY AUTOINCREMENT, start REAL, end REAL, length REAL)")
+            self.conn.commit()
+
+        # sets up clusterings table
+        try:
+            self.c.execute("SELECT * FROM clusterings")
+        except self.conn.OperationalError:
+            self.c.execute('''CREATE TABLE clusterings (
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        num_clusters INTEGER,
+                                        start_date TEXT,
+                                        end_date TEXT,
+                                        iterations INTEGER,
+                                        squared_error REAL)
+                                        ''')
+            self.conn.commit()
+
+        # sets up initial_shots table
+        try:
+            self.c.execute("SELECT * FROM initial_shots")
+        except self.conn.OperationalError:
+            self.c.execute("CREATE TABLE initial_shots (clustering_id INTEGER, shot_id INTEGER)")
+            self.conn.commit()
+
+        # sets up shots table to store frame differences
+        try:
+            self.c.execute("SELECT * FROM cluster")
+        except self.conn.OperationalError:
+            self.c.execute("CREATE TABLE cluster (id INTEGER PRIMARY KEY AUTOINCREMENT, clustering_id INTEGER)")
             self.conn.commit()
 
 
