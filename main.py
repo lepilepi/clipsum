@@ -4,11 +4,11 @@ from optparse import OptionParser
 import math
 import Image
 import ImageDraw
-from clustering import KMeans
-from database import ProjectInfo
-from k_means_plus_plus import do_kmeans_plus_plus
-from shots import extract_shots, Shot
-from videoparser import VideoParser
+from core.clustering import KMeans
+from core.database import ProjectInfo
+from core.k_means_plus_plus import do_kmeans_plus_plus
+from core.shots import extract_shots, Shot
+from core.videoparser import VideoParser
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 
