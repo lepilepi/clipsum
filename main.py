@@ -1,4 +1,3 @@
-import cv, sys, csv
 from datetime import datetime
 from operator import attrgetter
 from optparse import OptionParser
@@ -12,17 +11,6 @@ from shots import extract_shots, Shot
 from videoparser import VideoParser
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
-
-class ResultWriter(object):
-    def __init__(self, file):
-        self.file = open(file, 'wb')
-        self.writer = csv.writer(self.file, delimiter=',',
-                                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    def write_to_csv(self, data):
-        self.writer.writerow(data)
-
-    def close(self):
-        self.file.close()
 
 def draw_clusters(clusters, parser, results=[]):
         WIDTH = 1000
