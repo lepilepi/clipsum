@@ -161,13 +161,29 @@ def main():
     clusterings=[]
     for i in range(options.repeat):
         print "====== clustering #%d ======" % (i+1)
-#        initial_clusters=[[o] for o in random.sample(shots, num_of_clusters)]
+
         initial_clusters=do_kmeans_plus_plus(shots, num_of_clusters)
+        clustering_id = project.create_clustering(num_of_clusters)
+        for cluster in initial_clusters:
+            project.add_initial_shot(clustering_id, cluster[0].id)
+
         print "\tinitial clusters:", initial_clusters
+
         clustering = KMeans(initial_clusters)
         clustering.execute(shots)
+
+        for cluster in clustering.clusters:
+            cluster_id = project.create_cluster(clustering_id)
+            for shot in cluster:
+                if shot==cluster.closest:
+                    project.add_cluster_shot(cluster_id,shot.id, 1)
+                else:
+                    project.add_cluster_shot(cluster_id,shot.id, 0)
+
         print "\tresults:",clustering.results
         print "\terror:",clustering.total_squared_error()
+
+        project.update_clustering(clustering_id, clustering.num_iterations, clustering.total_squared_error())
 
         clusterings.append((clustering.total_squared_error(), clustering))
 

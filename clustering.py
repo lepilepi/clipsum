@@ -249,8 +249,9 @@ class KMeans(ClusteringAlgorithm):
         
     def execute(self, objects, verbose=True):
 
-        for i in range(1): #6 !!!!!!!!!!
+        for i in range(6):
             if verbose: print "\titeration %d" % (i+1)
+            self.num_iterations = i+1
 
             start_time = datetime.now()
             changes = self.iterate(objects)
@@ -269,7 +270,8 @@ class KMeans(ClusteringAlgorithm):
             sys.stdout.write("\r\t\tcluster %d/%d" % (i+1,len(cluster.objects)))
             sys.stdout.flush()
             centroid = cluster.get_centroid()
-            self.results.append(min([(self.dist_from_centroid(o,centroid),o) for o in cluster.objects])[1])
+            cluster.closest = min([(self.dist_from_centroid(o,centroid),o) for o in cluster.objects])[1]
+            self.results.append(cluster.closest)
         sys.stdout.write("\r\t\tOK                 \n")
         sys.stdout.flush()
 
