@@ -1,9 +1,6 @@
 from datetime import datetime
-from operator import attrgetter
 from optparse import OptionParser
 import math
-import Image
-import ImageDraw
 from core.clustering import KMeans
 from core.database import ProjectInfo
 from core.k_means_plus_plus import do_kmeans_plus_plus
@@ -12,53 +9,6 @@ from core.videoparser import VideoParser
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 
-def draw_clusters(clusters, parser, results=[]):
-        WIDTH = 1000
-        HEIGHT = 30
-        for cluster in clusters:
-            HEIGHT+=(int((len(cluster.objects)*100)/WIDTH)+1)*90 + 50
-
-        HEIGHT += 200
-
-        out = Image.new('RGBA', (WIDTH,HEIGHT))
-        draw = ImageDraw.Draw(out)
-        draw.rectangle((0, 0, WIDTH, HEIGHT), fill=(255,255,255))
-        x=10
-        y=10
-        n=0
-        # for n, cluster in zip(range(len(self.clusters)), self.clusters):
-        for cluster in sorted(clusters):
-            draw.rectangle((0, y-2, WIDTH, y+12), fill=(0,0,250))
-            draw.text((x,y),'Cluster #%s (%s objects)' % (n+1,len(cluster.objects)))
-            y+=20
-            for shot in sorted(clusters[n], key=attrgetter('length')):
-                if x>=WIDTH-110:
-                    x = 10
-                    y+= 140
-                im = Image.open('shots/%s.%d.jpg' % (parser.filename.split('.')[0], shot.median()))
-#                print shot.median()
-#                im = parser.PIL_frame_msec(shot.median())
-                im.thumbnail((100,100), Image.ANTIALIAS)
-                if shot in results:
-                    draw.rectangle(((x-5,y-5),(x+105,y+85)),fill=(50,200,50))
-                out.paste(im, (x,y+12))
-
-                draw.text((x,y),str(int(shot.median())),fill=(0,0,0))
-#                if img.flag_move_to_clusternum:
-#                    draw.text((x,y+im.size[1]+31),'#'+str(img.flag_move_from_clusternum+1)+' -> #'+str(img.flag_move_to_clusternum+1))
-#                if img.sceneNum:
-#                    draw.text((x,y+im.size[1]+41),'scene num: '+str(img.sceneNum))
-#                if img.matched:
-                    # draw.rectangle((x, y+12, x+im.size[0], y+12+18), fill=(255,255,255))
-#                    draw.text((x,y+im.size[1]+11),img.matched.get_only_filename())
-#                    draw.text((x,y+im.size[1]+21),str(img.matching_qom))
-                x+=100+10
-            x=10
-            y+=90
-            n+=1
-
-        #out.show()
-        out.save("_output.jpg", "JPEG")
 
 def calc_hist_for_shot((shot, parser)):
     #shot.surf = parser.surf(shot.median())
@@ -146,7 +96,6 @@ def main():
     num_of_clusters = int(math.sqrt(len(shots)/2)) + 2
     print "numer of clusters: %d" % num_of_clusters
 
-    clusterings=[]
     for i in range(options.repeat):
         print "====== clustering #%d ======" % (i+1)
 
@@ -172,14 +121,6 @@ def main():
         print "\terror:",clustering.total_squared_error()
 
         project.update_clustering(clustering_id, clustering.num_iterations, clustering.total_squared_error())
-
-        clusterings.append((clustering.total_squared_error(), clustering))
-
-    (best_error, best_clustering) = (min(clusterings)[0], min(clusterings)[1])
-    print "====== Best clustering ======"
-    print "\tbest results:",best_clustering.results
-    print "\tbest error:",best_clustering.total_squared_error()
-    draw_clusters(best_clustering.clusters, parser, best_clustering.results)
 
 
 if __name__ == "__main__":

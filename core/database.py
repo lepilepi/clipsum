@@ -1,6 +1,7 @@
 from datetime import datetime
 import sqlite3
 import os
+from core.shots import Shot
 
 class ProjectInfo(object):
 
@@ -10,8 +11,8 @@ class ProjectInfo(object):
 
     def __init__(self, filename):
         if os.path.exists(filename):
-            project_name = os.path.basename(filename)
-            self.conn = sqlite3.connect('%s.db' % project_name)
+            self.project_name = os.path.basename(filename)
+            self.conn = sqlite3.connect('%s.db' % self.project_name)
             self.c = self.conn.cursor()
             self.set_up_tables()
             self.filename = filename
@@ -91,8 +92,9 @@ class ProjectInfo(object):
     @property
     def filename(self):
         self.c.execute("SELECT filename FROM project_info")
-        if self.c.fetchone():
-            return self.c.fetchone()[0]
+        row = self.c.fetchone()
+        if row:
+            return row[0]
         else:
             return None
 
@@ -145,3 +147,22 @@ class ProjectInfo(object):
                                     (iterations, squared_error, datetime.now().isoformat(), clustering_id))
         self.conn.commit()
 
+    def cluster_shots(self, cluster_id):
+        return self.c.execute("SELECT shots.id, shots.start, shots.end, cluster_shots.in_result FROM shots INNER JOIN cluster_shots ON shots.id = cluster_shots.shot_id WHERE cluster_shots.cluster_id=?", cluster_id)
+
+    def clusters(self, clustering_id):
+        clusters = []
+        cluster_ids = [cl for cl in self.c.execute("SELECT id FROM clusters WHERE clustering_id=?", clustering_id)]
+
+        for cluster_id in cluster_ids:
+            shot_array = []
+            for s in self.cluster_shots(cluster_id):
+                shot = Shot(s[1],s[2], id=s[0])
+                shot.is_result = s[3]
+                shot_array.append(shot)
+
+            clusters.append(shot_array)
+
+        return clusters
+
+#SELECT id,MIN(squared_error) FROM clusterings;
