@@ -89,6 +89,16 @@ class VideoParser(object):
 
         return hist
 
+    def surf_frame(self, frame):
+        self.get_capture()
+        img = self._get_frame(frame)
+
+        img_grayscale = CreateMat(img.height,  img.width,  CV_8U)
+        CvtColor(img,img_grayscale,BGR2GRAY);
+
+        (keypoints, descriptors) = ExtractSURF(img_grayscale, None, CreateMemStorage(), (1, 100, 5, 4)) #(1, 30, 3, 1)
+        return (keypoints, descriptors)
+
     def surf(self, msec):
         self.get_capture()
         img = self._get_frame_msec(msec)
@@ -99,6 +109,9 @@ class VideoParser(object):
         (keypoints, descriptors) = ExtractSURF(img_grayscale, None, CreateMemStorage(), (1, 100, 5, 4)) #(1, 30, 3, 1)
         return (keypoints, descriptors)
 
+    def total_frames(self):
+        self.get_capture()
+        return int(GetCaptureProperty(self.capture,FRAME_COUNT))
 
     def parse(self, callback=lambda x:x):
         self.get_capture()
