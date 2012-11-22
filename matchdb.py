@@ -17,21 +17,31 @@ if __name__ == '__main__':
     surf = cv2.SURF()
     keys,desc = surf.detect(templateg,None,useProvidedKeypoints = False)
 
+    frames = {}
+    for keyp in db.c.execute("SELECT * FROM keypoints"):
+        if not frames.has_key(keyp[0]):
+            frames[keyp[0]] = []
+        frames[keyp[0]].append(keyp[7:])
+        print keyp[0]
 
-    frames = [(f[0],f[1]) for f in db.frames()]
 
-    for frame_id, frames_pos in frames:
-        keypoints, descriptors = [], []
-        for row in db.keypoints_for_frame(frame_id):
-            keypoints.append( ((row[1],row[2]),row[3],row[4],row[5],row[6]) )
-            descriptors.append( row[7:] )
 
-        if not len(keypoints):
-            continue
-
+#    frames = [(f[0],f[1]) for f in db.frames()]
+#
+    best=[0,0,0]
+    for k,descriptors in frames.items():
+#    for frame_id, frames_pos in frames:
+#        keypoints, descriptors = [], []
+#        for row in db.keypoints_for_frame(frame_id):
+#            keypoints.append( ((row[1],row[2]),row[3],row[4],row[5],row[6]) )
+#            descriptors.append( row[7:] )
+#
+#        if not len(keypoints):
+#            continue
+#
         # Setting up samples and responses for kNN
         samples = np.array(descriptors,dtype = np.float32)
-        responses = np.arange(len(keypoints),dtype = np.float32)
+        responses = np.arange(len(descriptors),dtype = np.float32)
 
         # kNN training
         knn = cv2.KNearest()
@@ -50,4 +60,11 @@ if __name__ == '__main__':
         Ks=len(descriptors)
         Kc=len(desc)
         Km=len(matched)
-        print 'frame#%d' % frame_id, '(%d, %d, %d)' % (Kc,Ks,Km),frames_pos, (float(Km)/Ks)*100*(float(Kc)/Ks)
+        q=(float(Km)/Ks)*100*(float(Kc)/Ks)
+
+        if q>best[2]:
+            best=(k,(Kc,Ks,Km),q)
+        print 'frame#%d' % k, '(%d, %d, %d)' % (Kc,Ks,Km), q
+
+    print best
+#        print 'frame#%d' % frame_id, '(%d, %d, %d)' % (Kc,Ks,Km),frames_pos, (float(Km)/Ks)*100*(float(Kc)/Ks)
