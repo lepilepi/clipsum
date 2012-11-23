@@ -152,7 +152,7 @@ class ProjectInfo(object):
 
     def clusters(self, clustering_id):
         clusters = []
-        cluster_ids = [cl for cl in self.c.execute("SELECT id FROM clusters WHERE clustering_id=?", clustering_id)]
+        cluster_ids = [cl for cl in self.c.execute("SELECT id FROM clusters WHERE clustering_id=?", (clustering_id,))]
 
         for cluster_id in cluster_ids:
             shot_array = []
@@ -164,5 +164,11 @@ class ProjectInfo(object):
             clusters.append(shot_array)
 
         return clusters
+
+    def best_clustering_id(self):
+        return self.c.execute('''SELECT id FROM clusterings
+                        WHERE squared_error=(
+                            SELECT min(squared_error) FROM clusterings);
+                    ''').fetchone()[0]
 
 #SELECT id,MIN(squared_error) FROM clusterings;

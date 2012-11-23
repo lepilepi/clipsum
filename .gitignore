@@ -4,3 +4,5 @@ output
 vid
 *.pyc
 .DS_Store
+*.db
+report

@@ -1,3 +1,4 @@
+from cv2.cv import Resize
 import os
 from cv import CaptureFromFile, GetCaptureProperty, SetCaptureProperty, QueryFrame
 from cv import SaveImage, Copy, GrabFrame, CreateVideoWriter, WriteFrame,RetrieveFrame
@@ -58,13 +59,19 @@ class VideoParser(object):
             self.capture = CaptureFromFile(self.filename)
         return self.capture
 
-    def save_frame_msec(self, msec):
-        file_name = 'shots/%s.%d.jpg' % (self.filename.split('.')[0],msec)
+    def save_frame_msec(self, msec, file_name=None, width=None):
+        if not file_name:
+            file_name = 'shots/%s.%d.jpg' % (self.filename.split('.')[0],msec)
 
         if not os.path.exists(file_name):
             self.get_capture()
             img = self._get_frame_msec(msec)
-            SaveImage(file_name, img)
+            if width:
+                thumbnail = CreateMat(width, int(width/float(img.height)*img.width), CV_8UC3)
+                Resize(img, thumbnail)
+                SaveImage(file_name, thumbnail)
+            else:
+                SaveImage(file_name, img)
 
     def hsv_hist(self, msec):
         self.get_capture()
