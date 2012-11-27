@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 import sys
+import os
+import tables
 from datetime import datetime
 from core.surf_database import FeatureStore
 
 if __name__ == '__main__':
-    db = FeatureStore(sys.argv[1])
 
     # Load the image
     template =cv2.imread(sys.argv[2])
@@ -17,19 +18,41 @@ if __name__ == '__main__':
     surf = cv2.SURF()
     keys,desc = surf.detect(templateg,None,useProvidedKeypoints = False)
 
-    frames = {}
-    for keyp in db.c.execute("SELECT * FROM keypoints"):
-        if not frames.has_key(keyp[0]):
-            frames[keyp[0]] = []
-        frames[keyp[0]].append(keyp[7:])
-        print keyp[0]
+
+    # -------------------------------
+    filename = '%s.surf.hdf' % os.path.basename(sys.argv[1])
+    f = tables.openFile(filename, 'r')
+
+    n_keypoints = f.root.descriptors.nrows
+    print n_keypoints
+    m=np.empty((n_keypoints,128) ,dtype=np.float64)
+
+    for i,row in enumerate(f.root.descriptors):
+        m[i] = row
+
+    f.close()
+    # -------------------------------
 
 
+#    STORE matrix to HDF file format
+#    d1 = datetime.now()
+#        ****************************
+#    f = tables.openFile('test.hdf', 'w')
+#    atom = tables.Atom.from_dtype(m.dtype)
+#    filters = tables.Filters(complib='blosc', complevel=5)
+#    ds = f.createCArray(f.root, 'somename', atom, m.shape, filters=filters)
+#    ds[:] = m
+#    f.close()
+#        ****************************
+#
+#    d2 = datetime.now()
+#    print "elapsed time: %d.%d" % ((d2-d1).seconds, (d2-d1).microseconds)
 
-#    frames = [(f[0],f[1]) for f in db.frames()]
+
+    #    frames = [(f[0],f[1]) for f in db.frames()]
 #
     best=[0,0,0]
-    for k,descriptors in frames.items():
+    for i,descriptors in enumerate(m):
 #    for frame_id, frames_pos in frames:
 #        keypoints, descriptors = [], []
 #        for row in db.keypoints_for_frame(frame_id):
@@ -63,8 +86,8 @@ if __name__ == '__main__':
         q=(float(Km)/Ks)*100*(float(Kc)/Ks)
 
         if q>best[2]:
-            best=(k,(Kc,Ks,Km),q)
-        print 'frame#%d' % k, '(%d, %d, %d)' % (Kc,Ks,Km), q
+            best=(i,(Kc,Ks,Km),q)
+        print 'frame#%d' % i, '(%d, %d, %d)' % (Kc,Ks,Km), q
 
     print best
 #        print 'frame#%d' % frame_id, '(%d, %d, %d)' % (Kc,Ks,Km),frames_pos, (float(Km)/Ks)*100*(float(Kc)/Ks)
