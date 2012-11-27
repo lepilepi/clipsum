@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     total = parser.total_frames()
     for frame_number in range(0, total, 25):
-        print "frame %d of %d (%f%%)"  % (frame_number, total, frame_number/float(total/float(25)))
+        print "frame %d of %d (%f%%)"  % (frame_number, total, frame_number/float(total)*100)
         frame_id = db.add_frame(frame_number)
 
         (k,d) = parser.surf_frame(frame_number)
