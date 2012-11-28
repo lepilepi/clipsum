@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     n_keypoints = db.c.execute("SELECT COUNT(*) FROM keypoints").fetchone()[0]
     print n_keypoints
-    m=np.empty((n_keypoints,128) ,dtype=np.float64)
+    m=np.empty((n_keypoints,128) ,dtype=np.float32)
 
     print "Starting reading database file and building numpy array..."
     d1 = datetime.now()

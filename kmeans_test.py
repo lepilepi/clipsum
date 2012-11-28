@@ -14,7 +14,6 @@ K = int(sys.argv[2])
 # and have a total 3 channels.
 #
 col = cv.Reshape(im, 3, im.width*im.height)
-import pdb;pdb.set_trace()
 samples = cv.CreateMat(col.height, 1, cv.CV_32FC3)
 cv.Scale(col, samples)
 labels = cv.CreateMat(col.height, 1, cv.CV_32SC1)
@@ -23,6 +22,8 @@ labels = cv.CreateMat(col.height, 1, cv.CV_32SC1)
 #
 crit = (cv.CV_TERMCRIT_EPS + cv.CV_TERMCRIT_ITER, 10, 1.0)
 cv.KMeans2(samples, K, labels, crit)
+
+import pdb;pdb.set_trace()
 #
 # Determine the center of each cluster.  The old OpenCV interface (C-style)
 # doesn't seem to provide an easy way to get these directly, so we have to
