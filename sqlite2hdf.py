@@ -44,14 +44,14 @@ if __name__ == '__main__':
     # Creating tables for keypoints
     # *****************************
     schema = {
-        'pos':      tables.IntCol(),
-        'x':        tables.FloatCol(),
-        'y':        tables.FloatCol(),
-        'laplacian':tables.IntCol(),
-        'size':     tables.IntCol(),
-        'dir':      tables.FloatCol(),
-        'hessian':  tables.FloatCol(),
-        'cluster':  tables.IntCol(dflt=-1),
+        'pos':      tables.IntCol(pos=1),
+        'x':        tables.FloatCol(pos=2),
+        'y':        tables.FloatCol(pos=3),
+        'laplacian':tables.IntCol(pos=4),
+        'size':     tables.IntCol(pos=5),
+        'dir':      tables.FloatCol(pos=6),
+        'hessian':  tables.FloatCol(pos=7),
+        'cluster':  tables.IntCol(dflt=-1, pos=8),
         }
     f.createTable('/', 'keypoints', schema)
     keypoints=f.root.keypoints

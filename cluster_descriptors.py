@@ -59,5 +59,27 @@ for i,row in enumerate(f.root.keypoints):
 
 d2 = datetime.now()
 print "Done: %d.%d" % ((d2-d1).seconds, (d2-d1).microseconds)
-import pdb; pdb.set_trace()
 
+
+print 'Building inverted index...'
+
+d1 = datetime.now()
+try:
+    f.root.clusters._f_remove(recursive=1)
+except tables.NoSuchNodeError:
+    pass
+f.createGroup(f.root, 'clusters')
+
+for cluster_id in range(K):
+    data = list(set(f.root.keypoints.readWhere('cluster==%d' % cluster_id, field='pos')))
+
+    filters = tables.Filters(complib='blosc', complevel=1)
+    descriptors = f.createCArray(f.root.clusters, "cluster_%d" % cluster_id, tables.Int32Atom(), (1,len(data)), filters=filters)
+    descriptors[:] = data[:]
+
+d2 = datetime.now()
+print "Building time was: %d.%d" % ((d2-d1).seconds, (d2-d1).microseconds)
+
+
+import pdb; pdb.set_trace()
+f.close()
