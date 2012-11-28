@@ -51,6 +51,7 @@ if __name__ == '__main__':
         'size':     tables.IntCol(),
         'dir':      tables.FloatCol(),
         'hessian':  tables.FloatCol(),
+        'cluster':  tables.IntCol(dflt=-1),
         }
     f.createTable('/', 'keypoints', schema)
     keypoints=f.root.keypoints
