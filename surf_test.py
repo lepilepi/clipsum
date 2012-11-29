@@ -34,7 +34,7 @@ if sys.argv[2] in ['list','save','show']:
         (keypoints, descriptors) = ExtractSURF(im_grayscale, None, CreateMemStorage(), (1, 30, 3, 4))
         for ((x, y), laplacian, size, dir, hessian) in keypoints:
             print "x=%d y=%d laplacian=%d size=%d dir=%f hessian=%f" % (x, y, laplacian, size, dir, hessian)
-            Circle(im_color,(int(x),int(y)),size/5,Scalar(0,255,0),1)
+            Circle(im_color,(int(x),int(y)),size/10,Scalar(0,255,0),1)
 
         print "Number of keypoinst: %d" % len(keypoints)
 
