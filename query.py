@@ -15,6 +15,13 @@ p = 5000
 filename = '%s.surf.hdf' % os.path.basename(sys.argv[1])
 f = tables.openFile(filename, 'r')
 
+
+try:
+    f.root.clusters
+except tables.NoSuchNodeError:
+    print "Please run 'cluster_descriptors.py' first!"
+    sys.exit(-1)
+
 feature_ids = f.root.keypoints.readWhere(
             '(pos==%d) & (x>%d) & (x<%d) & (y>%d) & (y<%d)' % (p,x1,x2,y1,y2),
             field='cluster')

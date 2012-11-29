@@ -84,9 +84,19 @@ if __name__ == '__main__':
     print "Bulilding descriptors..."
 
     descriptors[:] = m[:,9:]
-    f.close()
-    # *********************************************************
-
 
     d2 = datetime.now()
     print "Descriptors saved. Elapsed time: %d.%d" % ((d2-d1).seconds, (d2-d1).microseconds)
+
+
+    d1 = datetime.now()
+
+    print 'Creating indexes'
+    f.root.keypoints.cols.x.createIndex()
+    f.root.keypoints.cols.y.createIndex()
+
+
+    d2 = datetime.now()
+    print "Indexes created. Elapsed time: %d.%d" % ((d2-d1).seconds, (d2-d1).microseconds)
+
+    f.close()
