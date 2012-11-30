@@ -8,4 +8,5 @@ numpy==1.6.2
 #pyprof2calltree==1.1.0
 scipy==0.11.0
 -e git+https://github.com/PyTables/PyTables.git@a51c549c1555050d72e0aeb2ff5e04d48a71b1b4#egg=tables-dev
+web.py==0.37
 wsgiref==0.1.2

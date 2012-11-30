@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <span id="ajax-box">
+        {% include 'index.inner.html' %}
+    </span>
+    <div id="slider"></div>
+
+    SURF:
+    <input type="checkbox" name="surf"{% if surf %} checked{% endif %}/>
+{% endblock %}
