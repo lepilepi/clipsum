@@ -121,8 +121,15 @@ body{
     margin: 20px;
 }
 
-
-
+#active_area{
+    position: absolute;
+    opacity: 0.3;
+    background-color: lightGreen;
+    border-width: 1px;
+    border-style: dashed;
+    width: 100px;
+    height: 100px;
+}
 
 
 
