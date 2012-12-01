@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="content">
+
     <span id="ajax-box">
         {% include 'index.inner.html' %}
     </span>
@@ -9,11 +11,24 @@
     SURF:
     <input type="checkbox" name="surf"{% if surf %} checked{% endif %}/>
 
-    <p id="selection" style="display:none">
-        Selection:<br/>
-        (<span id="x1"></span>, <span id="y1"></span>) -
-        (<span id="x2"></span>, <span id="y2"></span>)
-        <button id="clear">Clear</button>
-    </p>
     <div id="active_area" style="display:none"></div>
+
+</div>
+
+<div class="content" id="selection" style="display:none">
+    <strong>Selection</strong>
+    <p>
+    [<span id="x1"></span>, <span id="y1"></span>]
+    [<span id="x2"></span>, <span id="y2"></span>]
+    </p>
+    <button id="search">Search</button>
+    <button id="clear">Clear</button>
+</div>
+
+<div class="content" id="results" style="display:none">
+    <strong>Results</strong>
+    <div id="results_inner">
+    </div>
+</div>
+
 {% endblock %}

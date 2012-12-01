@@ -1,0 +1,11 @@
+Top {{ thumbnails|length }} (from {{length}}) matches
+<br/>
+{% for img_data,pos,s in thumbnails %}
+    <a href="../../frame/{{pos}}/">
+        <img src="data:image/png;base64,{{img_data}}" alt="image" title="{{pos}}:{{s}}" />
+    </a>
+{% endfor %}
+
+<p>
+    Data: {{data}}
+</p>

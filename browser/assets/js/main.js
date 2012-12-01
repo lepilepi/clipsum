@@ -76,4 +76,19 @@ $(document).ready(function() {
         $('#selection').hide()
         $('#active_area').hide()
     })
+
+    $('#search').on('click', function(){
+        $('#results_inner').load('../../search/?' + $.param({
+                                            p: $('#slider').slider("value"),
+                                            x1: x1,
+                                            x2: x2,
+                                            y1: y1,
+                                            y2: y2
+                                    }))
+        $('#results').show()
+    })
+
+    $( document ).tooltip({
+        track: true
+    });
 });

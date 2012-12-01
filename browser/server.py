@@ -2,9 +2,12 @@ import jinja2
 import web
 import os
 import cv
+from query import query_region
 
 MODULE_ROOT = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.join(MODULE_ROOT, '../')
+
+WIDTH = 100
 
 env = jinja2.Environment(loader=jinja2.PackageLoader('browser','assets'))
 
@@ -12,8 +15,46 @@ urls = (
     '/(js|css|img)/(.*)', 'static',
     '/', 'hello',
     '/(\w+.\w+)/(frame|msec)/(\d+)/', 'FrameView',
+    '/(\w+.\w+)/search/', 'SearchView'
     )
 app = web.application(urls, globals())
+
+def img_to_base64(img):
+    jpegdata = cv.EncodeImage(".jpeg", img).tostring()
+    return jpegdata.encode('base64')
+
+class SearchView:
+    def GET(self, filename):
+        params = web.input(_method='get')
+        p = int(params['p'])
+        x1 = int(params['x1'])
+        y1 = int(params['y1'])
+
+        x2 = int(params['x2'])
+        y2 = int(params['y2'])
+
+        result = query_region(filename, p,x1,y1,x2,y2)
+        template = env.get_template('search.html')
+
+        length = len(result.most_common())
+        results = result.most_common(20)
+
+        capture = cv.CaptureFromFile(filename)
+
+        thumbnails = []
+        for r in results:
+            cv.SetCaptureProperty(capture, cv.CV_CAP_PROP_POS_FRAMES, float(r[0]))
+            img = cv.QueryFrame(capture)
+            thumbnail = cv.CreateMat(WIDTH, int(WIDTH/float(img.height)*img.width), cv.CV_8UC3)
+            cv.Resize(img, thumbnail)
+
+            thumbnails.append((img_to_base64(thumbnail),r[0], r[1]))
+
+        html = template.render(data = result.most_common(10),
+                                thumbnails = thumbnails,
+                                length = length)
+        return html
+
 
 class FrameView:
     def GET(self, filename, type, pos):
@@ -48,9 +89,7 @@ class FrameView:
                 cv.Circle(img,(int(x),int(y)),size/10, cv.Scalar(0,255,0),1)
 
         # convert imgage data to base64 string
-        jpegdata = cv.EncodeImage(".jpeg", img).tostring()
-        img_data =  jpegdata.encode('base64')
-
+        img_data = img_to_base64(img)
 
 
         # choose template based on the type of the request
