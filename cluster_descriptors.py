@@ -40,7 +40,8 @@ else:
     print "Opencv kmeans"
     samples = cv.fromarray(m)
     labels = cv.CreateMat(samples.height, 1, cv.CV_32SC1)
-    crit = (cv.CV_TERMCRIT_EPS + cv.CV_TERMCRIT_ITER, 10, 1.0)
+#    crit = (cv.CV_TERMCRIT_EPS + cv.CV_TERMCRIT_ITER, 10, 1.0)
+    crit = (cv.CV_TERMCRIT_ITER, 10)
     cv.KMeans2(samples, K, labels, crit)
 
 
