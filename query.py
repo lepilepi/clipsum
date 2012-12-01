@@ -22,7 +22,8 @@ def query_region(filename, p, x1,y1, x2,y2):
             field='cluster')
     frame_positions=[getattr(f.root.clusters, 'cluster_%d' % i)[0] for i in feature_ids]
 
-    frame_positions=np.concatenate(frame_positions)
+    if frame_positions:
+        frame_positions=np.concatenate(frame_positions)
 
     cc=Counter(frame_positions)
 
