@@ -104,6 +104,7 @@ $(document).ready(function() {
             <span class="frame">'+frame_num+'</span>   \
             [<span class="x1">'+x1+'</span>, <span class="y1">'+y1+'</span>]  \
             [<span class="x2">'+x2+'</span>, <span class="y2">'+y2+'</span>]  \
+            <button class="save">Save</button>       \
         </p>                                                              \
         <select name="frames" size="5">\
             <option value="'+frame_num+'">'+frame_num+'</option> \
@@ -138,6 +139,19 @@ $(document).ready(function() {
         }
         $(this).parent().parent().css('background-color','#bbffbb')
 
+    })
+    $('.save').live('click', function(){
+        var fe = $(this).parent().parent()
+        var frame_num = $('.frame', fe).html()
+        var x1 = $('.x1', fe).html()
+        var y1 = $('.y1', fe).html()
+        var x2 = $('.x2', fe).html()
+        var y2 = $('.y2', fe).html()
+
+        l=[]
+        $('option', fe).each(function(i,e){
+            l.push($(e).attr('value'))
+        })
     })
 
 });
