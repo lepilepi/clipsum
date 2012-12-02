@@ -131,6 +131,16 @@ body{
     height: 100px;
 }
 
+.feature{
+    position: relative;
+}
+.feature p{
+    margin-top: 0;
+}
+
+.feature select{
+    width: 120px;
+}
 
 
 

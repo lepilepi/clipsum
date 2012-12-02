@@ -34,7 +34,11 @@ function reload_img(){
     if ($('input[name=surf]').attr('checked')){
         param = "?surf"
     }
-    $('#ajax-box').load('../../frame/' + $('#slider').slider("value") + '/' + param)
+    var frame_num = $('#slider').slider("value")
+    $('#ajax-box').load('../../frame/' + frame_num + '/' + param, function(){
+        $('.feature').css('background-color','#eeeeee')
+        $('select option[value='+frame_num+']').parent().parent().css('background-color','#bbffbb')
+    })
 }
 
 $(document).ready(function() {
@@ -91,4 +95,49 @@ $(document).ready(function() {
     $( document ).tooltip({
         track: true
     });
+
+    $('#store').on('click', function(){
+        var frame_num = $('#slider').slider("value")
+        var el = $('<div class="content feature">                                  \
+        <p>                                                               \
+            <button class="append">Append</button>                        \
+            <span class="frame">'+frame_num+'</span>   \
+            [<span class="x1">'+x1+'</span>, <span class="y1">'+y1+'</span>]  \
+            [<span class="x2">'+x2+'</span>, <span class="y2">'+y2+'</span>]  \
+        </p>                                                              \
+        <select name="frames" size="5">\
+            <option value="'+frame_num+'">'+frame_num+'</option> \
+        </select>         \
+        </div>')
+
+        $(el).appendTo("#features")
+
+        var top_offset = $('.feature p').height() +
+        parseInt($('.feature p').css('margin-top')) +
+        parseInt($('.feature p').css('margin-bottom')) + 20
+
+        $(el).css({
+            height: top_offset+(y2-y1)-20 + 'px',
+            backgroundColor:'#bbffbb'
+        })
+
+        $('#img_holder img').clone()
+            .css({
+                position:'absolute',
+                clip:'rect('+y1+'px '+x2+'px '+y2+'px '+x1+'px)',
+                top: y1*-1+top_offset + 'px',
+                left: x1*-1+20 + 150 +'px'
+            }).appendTo(el)
+    })
+
+    $('.append').live('click', function(e){
+        var frame_num = $('#slider').slider("value")
+        var el = $(this).parent().parent().find('select')
+        if ($('option[value='+frame_num+']',el).length==0){
+            $('<option value="'+frame_num+'">'+frame_num+'</option>').appendTo(el)
+        }
+        $(this).parent().parent().css('background-color','#bbffbb')
+
+    })
+
 });
