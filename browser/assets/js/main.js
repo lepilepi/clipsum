@@ -112,13 +112,14 @@ $(document).ready(function() {
         </div>')
 
         $(el).appendTo("#features")
+        var sel_height = $('select', el).height()
 
         var top_offset = $('.feature p').height() +
         parseInt($('.feature p').css('margin-top')) +
         parseInt($('.feature p').css('margin-bottom')) + 20
 
         $(el).css({
-            height: top_offset+(y2-y1)-20 + 'px',
+            height: Math.max((y2-y1), sel_height)+top_offset-20 + 'px',
             backgroundColor:'#bbffbb'
         })
 
@@ -152,7 +153,6 @@ $(document).ready(function() {
         $('option', fe).each(function(i,e){
             frames.push($(e).attr('value'))
         })
-        console.log(frames)
 
         $.ajax({
             type: 'POST',
