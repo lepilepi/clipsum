@@ -110,7 +110,10 @@ class FrameView:
 
 class hello:
     def GET(self):
-        return 'Usage example: http://localhost:8080/video.avi/3000/'
+        video_files = [p for p in os.listdir(PROJECT_ROOT) if p[-4:]=='.avi']
+
+        template = env.get_template('usage.html')
+        return template.render(video_files=video_files)
 
 class static:
     def GET(self, media, file):

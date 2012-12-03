@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content">
+    <h3>Video browser</h3>
+    <hr/>
+    Usage examples:
+    <ul>
+        <li><a href="/video.avi/frame/0/">http://localhost:8000/video.avi/frame/0/</a></li>
+        <li><a href="/video.avi/msec/0/">http://localhost:8000/video.avi/msec/0/</a></li>
+    </ul>
+    <hr/>
+    {% if video_files %}
+    Available video files:
+    <ul>
+        {% for v in video_files %}
+        <li><a href="/{{v}}/frame/0/">{{v}}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    There are no video (.avi) files in the project directory.
+    {% endif %}
+</div>
+{% endblock %}
