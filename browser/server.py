@@ -2,6 +2,7 @@ import jinja2
 import web
 import os
 import cv
+from features import store_ref_data
 from query import query_region
 
 MODULE_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -15,13 +16,22 @@ urls = (
     '/(js|css|img)/(.*)', 'static',
     '/', 'hello',
     '/(\w+.\w+)/(frame|msec)/(\d+)/', 'FrameView',
-    '/(\w+.\w+)/search/', 'SearchView'
+    '/(\w+.\w+)/search/', 'SearchView',
+    '/(\w+.\w+)/save/', 'SaveFeatureView'
     )
 app = web.application(urls, globals())
 
 def img_to_base64(img):
     jpegdata = cv.EncodeImage(".jpeg", img).tostring()
     return jpegdata.encode('base64')
+
+class SaveFeatureView:
+    def POST(self, filename):
+        params = web.input(**{'frames[]':[], '_method':'post'})
+        store_ref_data(filename, params['frame_num'],
+                    params['x1'], params['y1'], params['x2'], params['y2'],
+                    [int(f) for f in params['frames[]']])
+        return 'ok'
 
 class SearchView:
     def GET(self, filename):

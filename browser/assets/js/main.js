@@ -148,10 +148,25 @@ $(document).ready(function() {
         var x2 = $('.x2', fe).html()
         var y2 = $('.y2', fe).html()
 
-        l=[]
+        frames=[]
         $('option', fe).each(function(i,e){
-            l.push($(e).attr('value'))
+            frames.push($(e).attr('value'))
         })
+        console.log(frames)
+
+        $.ajax({
+            type: 'POST',
+            url: '../../save/',
+            data: {
+                frame_num:frame_num,
+                x1:x1,
+                y1:y1,
+                x2:x2,
+                y2:y2,
+                frames:frames
+            },
+            success: function(){}
+        });
     })
 
 });
