@@ -2,7 +2,7 @@ from datetime import datetime
 import numpy as np
 import sys
 import tables
-from core.surf_database import FeatureStore
+from legacy.surf_database import FeatureStore
 
 if __name__ == '__main__':
     """ This tool helps to create HDF file with descriptors

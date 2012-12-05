@@ -3,8 +3,6 @@ import numpy as np
 import sys
 import os
 import tables
-from datetime import datetime
-from core.surf_database import FeatureStore
 
 if __name__ == '__main__':
 
