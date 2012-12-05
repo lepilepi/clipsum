@@ -6,6 +6,14 @@ import os
 import tables
 from scipy.cluster.vq import kmeans2 as scipy_kmeans
 
+
+""" Clusters descriptors and build inverted index. Also updates the HDF file
+with the results.
+
+Usage: python cluster_descriptors.py video.avi 1000
+
+Alternative usage: python cluster_descriptors.py video.avi 1000 [scipy]
+(not recommended) """
 # -------------------------------
 print 'Reading HDF file...'
 

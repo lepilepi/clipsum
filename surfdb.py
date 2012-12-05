@@ -6,6 +6,9 @@ import os
 import numpy as np
 
 if __name__ == '__main__':
+    """ Extracts SURF keypoints and saves in a HDF file
+    Usage: python surfdb.py video.avi """
+
     parser = VideoParser(sys.argv[1])
 
     filename = '%s.surf.hdf' % os.path.basename(sys.argv[1])
