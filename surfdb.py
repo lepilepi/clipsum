@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     d1 = datetime.now()
 
-    total = parser.total_frames()
+    total = parser.total_frames
     print "Extracting keypoints form frames..."
     for frame_pos in range(0, total, 25):
         print "frame %d of %d (%f%%)"  % (frame_pos, total, frame_pos/float(total)*100)
