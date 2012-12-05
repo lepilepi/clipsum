@@ -13,10 +13,8 @@ from cv import CV_CAP_PROP_FRAME_HEIGHT as HEIGHT
 from cv import CV_BGR2GRAY as BGR2GRAY
 from cv import CV_FOURCC as FOURCC, CV_BGR2HSV, CV_HIST_ARRAY, ExtractSURF
 from cv import CV_CAP_PROP_FPS as FPS
-from cv import CV_CAP_PROP_FOURCC as PROP_FOURCC
 from datetime import datetime
 import sys
-import Image
 
 class VideoParser(object):
     def __init__(self, filename, start=None, end=None, step=1, verbose=True):
@@ -25,6 +23,7 @@ class VideoParser(object):
         self.end = int(end or 0)
         self.step = int(step)
         self.verbose = verbose
+        self.capture = CaptureFromFile(self.filename)
 
     def _log(self,msg):
         if self.verbose:
@@ -53,18 +52,14 @@ class VideoParser(object):
     def _get_frame_pos(self):
         return GetCaptureProperty(self.capture, FRAME_POS)
 
-    def get_capture(self):
-        if not hasattr(self,'capture'):
-            #setup capture from output file
-            self.capture = CaptureFromFile(self.filename)
-        return self.capture
-
     def save_frame_msec(self, msec, file_name=None, width=None):
+        """ Saves an image from the video.
+        If width is given, it resizes the image before save."""
+
         if not file_name:
             file_name = 'shots/%s.%d.jpg' % (self.filename.split('.')[0],msec)
 
         if not os.path.exists(file_name):
-            self.get_capture()
             img = self._get_frame_msec(msec)
             if width:
                 thumbnail = CreateMat(width, int(width/float(img.height)*img.width), CV_8UC3)
@@ -74,11 +69,11 @@ class VideoParser(object):
                 SaveImage(file_name, img)
 
     def hsv_hist(self, msec):
-        self.get_capture()
-        frame = self._get_frame_msec(msec)
-        img = GetMat(frame)
+        """Extracts HSV histogram from a still image at 'msec' positions
+        form the video"""
 
-        #---- first image------------
+        img = GetMat(self._get_frame_msec(msec))
+
         # Convert to HSV
         hsv = CreateImage(GetSize(img), 8, 3)
         CvtColor(img, hsv, CV_BGR2HSV)
@@ -97,7 +92,8 @@ class VideoParser(object):
         return hist
 
     def surf_frame(self, frame):
-        self.get_capture()
+        """ Returns SURF keypoints and descriptors form a frame"""
+
         img = self._get_frame(frame)
 
         img_grayscale = CreateMat(img.height,  img.width,  CV_8U)
@@ -107,7 +103,8 @@ class VideoParser(object):
         return (keypoints, descriptors)
 
     def surf(self, msec):
-        self.get_capture()
+        """ Returns SURF keypoints and descriptors form a frame"""
+
         img = self._get_frame_msec(msec)
 
         img_grayscale = CreateMat(img.height,  img.width,  CV_8U)
@@ -116,40 +113,27 @@ class VideoParser(object):
         (keypoints, descriptors) = ExtractSURF(img_grayscale, None, CreateMemStorage(), (1, 100, 5, 4)) #(1, 30, 3, 1)
         return (keypoints, descriptors)
 
+    @property
     def total_frames(self):
-        self.get_capture()
         return int(GetCaptureProperty(self.capture,FRAME_COUNT))
 
     def parse(self, callback=lambda x:x):
-        self.get_capture()
+        """ Goes through the video frame by frame calculates the differences"""
 
-        frames = int(GetCaptureProperty(self.capture,FRAME_COUNT))
         if not self.end:
-            self.end = frames
+            self.end = self.total_frames
 
         #print information before start
         self._log_startup_info()
 
-
-        #save the FIST image of the video
         img = self._get_frame(self.start)
-        SaveImage('img/start_%d.jpg' % self.start, img)
-        self._log("From %d ms" % self._get_msec_pos())
 
-        #save the LAST image form the video
-        img = self._get_frame(self.end-self.step)
-        SaveImage('img/end_%d.jpg' % (self.end-self.step+1), img)
-        self._log("To %d ms" % self._get_msec_pos())
-
-        #initialize matrices
-#        grayscaled_image1 = CreateMat(img.height, img.width, CV_8U)
-#        grayscaled_image2 = CreateMat(img.height, img.width, CV_8U)
         buffer =  CreateMat(img.height,  img.width,  CV_8UC3)
         difference_image =  CreateMat(img.height,  img.width,  CV_8UC3)
 
-        for n in xrange(self.start, self.end-self.step+1, self.step):
+        for pos_frame in xrange(self.start, self.end-self.step+1, self.step):
             #get the first frame
-            img = self._get_frame(n)
+            img = self._get_frame(pos_frame)
             Copy(img, buffer)
             #CvtColor(img, grayscaled_image1, BGR2GRAY)
 
@@ -157,7 +141,7 @@ class VideoParser(object):
             pos_msec = self._get_msec_pos()
 
             #get the second frame
-            img = self._get_frame(n+self.step)
+            img = self._get_frame(pos_frame+self.step)
             #CvtColor(img, grayscaled_image2, BGR2GRAY)
 
             #calculate absolute difference
@@ -171,7 +155,7 @@ class VideoParser(object):
             abs_diff = Sum(difference_image)[0]
 
             #---invoke the callback function---
-            callback([n, pos_msec, abs_diff])
+            callback([pos_frame, pos_msec, abs_diff])
             #--- ---
 
             sys.stdout.write("\r%.3f %% (%d of %d)" % (
@@ -184,8 +168,7 @@ class VideoParser(object):
         print 'ok'
 
     def merge_shots(self,filename,shots):
-        self.get_capture()
-        
+
         shot = shots[2]
 
         print shot.start
