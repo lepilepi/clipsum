@@ -15,6 +15,7 @@ from cv import CV_FOURCC as FOURCC, CV_BGR2HSV, CV_HIST_ARRAY, ExtractSURF
 from cv import CV_CAP_PROP_FPS as FPS
 from datetime import datetime
 import sys
+import numpy as np
 
 class VideoParser(object):
     def __init__(self, filename, start=None, end=None, step=1, verbose=True):
@@ -117,7 +118,7 @@ class VideoParser(object):
     def total_frames(self):
         return int(GetCaptureProperty(self.capture,FRAME_COUNT))
 
-    def parse(self, callback=lambda x:x):
+    def parse(self):
         """ Goes through the video frame by frame calculates the differences"""
 
         if not self.end:
@@ -130,6 +131,8 @@ class VideoParser(object):
 
         buffer =  CreateMat(img.height,  img.width,  CV_8UC3)
         difference_image =  CreateMat(img.height,  img.width,  CV_8UC3)
+
+        data = np.empty((self.total_frames, 3) ,dtype=np.float32)
 
         for pos_frame in xrange(self.start, self.end-self.step+1, self.step):
             #get the first frame
@@ -154,8 +157,9 @@ class VideoParser(object):
                 print difference_image
             abs_diff = Sum(difference_image)[0]
 
-            #---invoke the callback function---
-            callback([pos_frame, pos_msec, abs_diff])
+            #--- append to the numpy array---
+#            callback([pos_frame, pos_msec, abs_diff])
+            data[pos_frame] = [pos_frame, pos_msec, abs_diff]
             #--- ---
 
             sys.stdout.write("\r%.3f %% (%d of %d)" % (
@@ -165,7 +169,7 @@ class VideoParser(object):
                 ))
             sys.stdout.flush()
 
-        print 'ok'
+        return data
 
     def merge_shots(self,filename,shots):
 
