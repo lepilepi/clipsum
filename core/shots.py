@@ -5,7 +5,7 @@ def extract_shots(data):
 
     shots = []
 
-    msec_array = [row[1] for row in data]
+    frame_array = [row[0] for row in data]
     diff_array = [float(row[2]) for row in data]
     dev_array = abs(diff(diff_array))
 
@@ -13,9 +13,9 @@ def extract_shots(data):
     mean_diff = array(diff_array, dtype=float).mean()
     mean_dev = array(dev_array, dtype=float).mean()
 
-    key_times = [float(msec_array[c]) for c,d in enumerate(dev_array) if d>(mean_dev*5)]
+    key_frames = [float(frame_array[c]) for c,d in enumerate(dev_array) if d>(mean_dev*5)]
 
-    clusters =DBScan(key_times, 1000).run()
+    clusters =DBScan(key_frames, 25).run()
     centroids = [float(sum([e for e in c])) / len(c) for c in clusters]
 
     for i in range(len(centroids)-1):
@@ -25,12 +25,13 @@ def extract_shots(data):
 
 class Shot(object):
     def __init__(self, start, end, id=None, hist=None, surf=None):
-        self.start = float(start)
-        self.end = float(end)
+        self.start = start
+        self.end = end
         self.id = id
         if hist: self.hist = hist
         if surf: self.surf = surf
 
+    @property
     def length(self):
         return self.end-self.start
     

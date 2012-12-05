@@ -8,6 +8,7 @@ from core.shots import extract_shots, Shot
 from core.videoparser import VideoParser
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
+from face import detect
 
 
 def calc_hist_for_shot((shot, parser)):
@@ -46,7 +47,7 @@ def main():
     if project.status == ProjectInfo.INITIAL:
         print 'Start video parsing'
 
-        # parse the video
+        # parse the video and stores differences to the database
         parser.parse(project.add_frame)
 
         print "Completed on %s" % datetime.now().strftime("%Y.%m.%d. %H:%M:%S")
@@ -63,14 +64,38 @@ def main():
         data = [row for row in project.frames]
         shots = extract_shots(data)
 
-        map(project.add_shot,[[s.start,s.end,s.length()] for s in shots])
+        # stores shot data (start, end, length) in the database
+        for s in shots:
+
+            movie_length = parser.total_frames
+            movie_type = 'manually'
+            shot_pos = s.median
+            shot_length = s.length
+            num_of_faces = len(detect(parser._get_frame(100)))
+            #global_oriantation = ...
+            # similars: AFTER clustering!
+
+            # TODO: store the additional parameters for classifier
+            # store to HDF:
+            # - movie_length
+            # - movie_type
+            #
+            # - shot_pos
+            # - shot_length
+            # - num_of_faces
+            # - calc and save histogram...
+            # - global_oriantation
+            #
+            # - dynamics (differences for all the frames
+
+            project.add_shot([s.start,s.end,s.length])
 
         print 'ok'
         project.status = ProjectInfo.SHOTS_EXTRACTED
     else:
         print "Shot boundaries were already detected, skip..."
 
-
+    # load shots from the database into the memory
     shots = [Shot(s[1],s[2], id=s[0]) for s in project.shots]
 
     if not shots:
@@ -80,13 +105,13 @@ def main():
     print "Calculation shot histograms..."
 
 
-    # calculates histograms
+    # calculates histograms, store in memory
     pool = ThreadPool(processes=cpu_count())
     p_shots=map(lambda x:(x, parser),shots)
 
     pool.map(calc_hist_for_shot, p_shots)
 
-    lengths = [s.length() for s in shots]
+    lengths = [s.length for s in shots]
     print "SHOTS:",len(lengths)
     print "AVG LENGTH:",sum(lengths)/len(lengths)
 
@@ -99,7 +124,10 @@ def main():
     for i in range(options.repeat):
         print "====== clustering #%d ======" % (i+1)
 
+        # claculate initail clustering
         initial_clusters=do_kmeans_plus_plus(shots, num_of_clusters)
+
+        # store initial clustering to the database
         clustering_id = project.create_clustering(num_of_clusters)
         for cluster in initial_clusters:
             project.add_initial_shot(clustering_id, cluster[0].id)
@@ -109,6 +137,7 @@ def main():
         clustering = KMeans(initial_clusters)
         clustering.execute(shots)
 
+        # save clustering to the database
         for cluster in clustering.clusters:
             cluster_id = project.create_cluster(clustering_id)
             for shot in cluster:
@@ -120,6 +149,7 @@ def main():
         print "\tresults:",clustering.results
         print "\terror:",clustering.total_squared_error()
 
+        # store clustering info into the database
         project.update_clustering(clustering_id, clustering.num_iterations, clustering.total_squared_error())
 
 
