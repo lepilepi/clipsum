@@ -12,9 +12,9 @@ from face import detect
 
 
 def calc_hist_for_shot((shot, parser)):
-    #shot.surf = parser.surf(shot.median())
-    parser.save_frame_msec(shot.median())
-    shot.hist =  parser.hsv_hist(shot.median())
+    #shot.surf = parser.surf(shot.median)
+    parser.save_frame_msec(shot.median)
+    shot.hist =  parser.hsv_hist(shot.median)
     
 
 def main():
@@ -71,7 +71,11 @@ def main():
             movie_type = 'manually'
             shot_pos = s.median
             shot_length = s.length
-            num_of_faces = len(detect(parser._get_frame(100)))
+            num_of_faces = len(detect(parser._get_frame(s.median)))
+            histogram = parser.hsv_hist(s.median)
+
+            # dynamics =
+
             #global_oriantation = ...
             # similars: AFTER clustering!
 
@@ -83,8 +87,7 @@ def main():
             # - shot_pos
             # - shot_length
             # - num_of_faces
-            # - calc and save histogram...
-            # - global_oriantation
+            # - histogram...
             #
             # - dynamics (differences for all the frames
 

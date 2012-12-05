@@ -68,11 +68,11 @@ class VideoParser(object):
             else:
                 SaveImage(file_name, img)
 
-    def hsv_hist(self, msec):
-        """Extracts HSV histogram from a still image at 'msec' positions
+    def hsv_hist(self, frame):
+        """Extracts HSV histogram from a still image at 'frame' position
         form the video"""
 
-        img = GetMat(self._get_frame_msec(msec))
+        img = GetMat(self._get_frame(frame))
 
         # Convert to HSV
         hsv = CreateImage(GetSize(img), 8, 3)

@@ -34,7 +34,8 @@ class Shot(object):
     @property
     def length(self):
         return self.end-self.start
-    
+
+    @property
     def median(self):
         return self.start + (self.end-self.start)/2
 
