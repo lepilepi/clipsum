@@ -7,12 +7,12 @@ from core.videoparser import VideoParser
 
 if __name__ == '__main__':
     """ Extracts frame differences and saves in a HDF file
-    Usage: python framedb.py video.avi """
+    Usage: python framedb.py video.avi thriller"""
 
     filename = '%s.hdf' % os.path.basename(sys.argv[1])
     f = tables.openFile(filename, 'w')
     # *****************************
-    # Creating tables for keypoints
+    # Creating tables for frames
     # *****************************
     schema = {
         'frame_pos':      tables.FloatCol(pos=1),
@@ -21,6 +21,8 @@ if __name__ == '__main__':
         }
     f.createTable('/', 'frames', schema)
     frames=f.root.frames
+
+    f.title = sys.argv[2]
 
     parser = VideoParser(sys.argv[1])
 
