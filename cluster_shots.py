@@ -77,8 +77,11 @@ if __name__ == '__main__':
     print "SHOTS:",len(lengths)
     print "AVG LENGTH:",sum(lengths)/len(lengths)
 
-    repeats = len(sys.argv)==3 and sys.argv[2] or 1
+    repeats = len(sys.argv)==3 and int(sys.argv[2]) or 1
     num_of_clusters = int(math.sqrt(len(shots)/2)) + 2
+
+    print "Number of clusters:", num_of_clusters
+    print "Number of repeats:", repeats
 
     for i in range(repeats):
         print "====== clustering #%d ======" % (i+1)
