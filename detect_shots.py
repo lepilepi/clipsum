@@ -5,18 +5,19 @@ from core.shots import extract_shots
 from core.videoparser import VideoParser
 from face import detect
 
-if __name__ == '__main__':
-    """ Detect shots and calculates shot attributes, stores in the hdf file.
-    Usage: python detect_shots.py video.avi
-    """
+def create_table_clusterings(f):
+    """ Creates table for clusterings in the HDF file. """
 
-    print 'Start shot detection'
+    schema = {
+        'num_iterations':      tables.IntCol(pos=1),
+        'squared_error':        tables.FloatCol(pos=2),
+        }
+    f.createTable('/', 'clusterings', schema)
+    return f.root.clusterings
 
-    filename = '%s.hdf' % os.path.basename(sys.argv[1])
-    f = tables.openFile(filename, 'r+')
-    # *****************************
-    # Creating tables for shots
-    # *****************************
+def create_table_shots(f):
+    """ Creates table for shots in the HDF file. """
+
     schema = {
         'start':      tables.IntCol(pos=1),
         'end':        tables.IntCol(pos=2),
@@ -26,10 +27,20 @@ if __name__ == '__main__':
         'dynamics':    tables.IntCol(pos=5),
         }
     f.createTable('/', 'shots', schema)
-    shots_table = f.root.shots
+    return f.root.shots
 
+if __name__ == '__main__':
+    """ Detect shots and calculates shot attributes, stores in the hdf file.
+    Usage: python detect_shots.py video.avi
+    """
+
+    filename = '%s.hdf' % os.path.basename(sys.argv[1])
+    f = tables.openFile(filename, 'r+')
     parser = VideoParser(sys.argv[1])
 
+    shots_table = create_table_shots(f)
+
+    print 'Start shot detection'
     shots = extract_shots(f.root.frames[:])
 
     num_shots = len(shots)
@@ -50,3 +61,6 @@ if __name__ == '__main__':
         print "%d of %d" % (i,num_shots)
 
     shots_table.flush()
+
+
+    create_table_clusterings(f)
