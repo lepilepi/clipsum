@@ -1,7 +1,10 @@
+from operator import itemgetter
 import sys
-from core.database import ProjectInfo
+import tables
+import numpy as np
 from jinja2 import Template, Environment, PackageLoader
 import os, errno
+from core.shots import Shot
 from core.videoparser import VideoParser
 
 def mkdir_p(path):
@@ -25,12 +28,20 @@ def copyanything(src, dst):
         else: raise
 
 
+filename = os.path.basename(sys.argv[1])
+hdf_filename = '%s.hdf' % os.path.basename(sys.argv[1])
+f = tables.openFile(hdf_filename, 'r+')
+clusterings = f.root.clusterings[:]
+min_clustering = min(clusterings, key=itemgetter('squared_error'))
+clustering_index = np.where(clusterings == min_clustering)
 
-filename = sys.argv[1]
-project = ProjectInfo(filename)
+clustering_group = getattr(f.root, 'clustering_%d' % clustering_index, None)
 
-id=project.best_clustering_id()
-clusters = project.clusters(id)
+clusters = []
+for arr in clustering_group:
+    if arr.name.startswith('cluster_'):
+        shots = f.root.shots[arr[0]]
+        clusters.append([Shot(s[0], s[1]) for s in shots])
 
 shutil.rmtree('report/css', ignore_errors=True)
 shutil.rmtree('report/images', ignore_errors=True)
@@ -48,10 +59,10 @@ parser = VideoParser(filename)
 for i,cluster in enumerate(clusters):
     print "%d of %d" % (i, len(clusters))
     for shot in cluster:
-        parser.save_frame_msec(shot.median(),
-            file_name='report/img/%d.jpg' % shot.median())
-        parser.save_frame_msec(shot.median(),
-                file_name='report/img/%d_thumb.jpg' % shot.median(),
+        parser.save_frame(shot.median,
+            file_name='report/img/%d.jpg' % shot.median)
+        parser.save_frame(shot.median,
+                file_name='report/img/%d_thumb.jpg' % shot.median,
                 width = 60)
 
 

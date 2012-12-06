@@ -26,8 +26,8 @@
                 <h3>Cluster ({{ cluster|length }})</h3>
                 <div class="cluster_inner">
                     {% for shot in cluster %}
-                        <a href="img/{{ shot.median()|int }}.jpg">
-                            <img src="img/{{ shot.median()|int }}_thumb.jpg" {% if shot.is_result %}class="result"{% endif %}/>
+                        <a href="img/{{ shot.median|int }}.jpg">
+                            <img src="img/{{ shot.median|int }}_thumb.jpg" {% if shot.is_result %}class="result"{% endif %}/>
                         </a>
                     {% endfor %}
                 </div>

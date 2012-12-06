@@ -53,6 +53,22 @@ class VideoParser(object):
     def _get_frame_pos(self):
         return GetCaptureProperty(self.capture, FRAME_POS)
 
+    def save_frame(self, frame, file_name=None, width=None):
+        """ Saves an image from the video.
+        If width is given, it resizes the image before save."""
+
+        if not file_name:
+            file_name = 'shots/%s.%d.jpg' % (self.filename.split('.')[0],frame)
+
+        if not os.path.exists(file_name):
+            img = self._get_frame(frame)
+            if width:
+                thumbnail = CreateMat(width, int(width/float(img.height)*img.width), CV_8UC3)
+                Resize(img, thumbnail)
+                SaveImage(file_name, thumbnail)
+            else:
+                SaveImage(file_name, img)
+
     def save_frame_msec(self, msec, file_name=None, width=None):
         """ Saves an image from the video.
         If width is given, it resizes the image before save."""
