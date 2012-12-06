@@ -47,6 +47,9 @@ class Cluster(object):
     def __iter__(self):
         return iter(self.objects)
 
+    def __len__(self):
+        return len(self.objects)
+
     def get_centroid(self):
         if not self.centroid:
             self.centroid = [[sum([cv.QueryHistValue_2D(o.hist,x,y) for o in self.objects])/len(self.objects) for y in range(100)] for x in range(100)]
@@ -174,6 +177,7 @@ class ClusteringAlgorithm():
     def count_results_and_print_clustering(self,objects_num, verbose):
         pass
 
+    @property
     def total_squared_error(self):
         e=0
         for cluster in self.clusters:

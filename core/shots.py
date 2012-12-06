@@ -25,9 +25,10 @@ def extract_shots(data):
     return shots
 
 class Shot(object):
-    def __init__(self, start, end, hist=None, surf=None):
+    def __init__(self, start, end, id=None, hist=None, surf=None):
         self.start = start
         self.end = end
+        self.id = id
         if hist: self.hist = hist
         if surf: self.surf = surf
 
