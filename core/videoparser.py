@@ -103,7 +103,7 @@ class VideoParser(object):
 
         # hue varies from 0 (~0 deg red) to 180 (~360 deg red again */
         # saturation varies from 0 (black-gray-white) to 255 (pure spectrum color)
-        hist = CreateHist([180, 255], CV_HIST_ARRAY, [[0, 180], [0, 255]], 1)
+        hist = CreateHist([100,100], CV_HIST_ARRAY, [[0, 180], [0, 255]], 1)
         CalcHist([GetImage(i) for i in planes], hist)
 
         return hist
