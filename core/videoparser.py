@@ -134,6 +134,11 @@ class VideoParser(object):
     def total_frames(self):
         return int(GetCaptureProperty(self.capture,FRAME_COUNT))
 
+    @property
+    def movie_length(self):
+        fps = GetCaptureProperty(self.capture, FPS)
+        return self.total_frames / float(fps)
+
     def parse(self):
         """ Goes through the video frame by frame calculates the differences"""
 

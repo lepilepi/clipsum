@@ -22,9 +22,10 @@ if __name__ == '__main__':
     f.createTable('/', 'frames', schema)
     frames=f.root.frames
 
-    f.title = sys.argv[2]
-
     parser = VideoParser(sys.argv[1])
+
+    frames.setAttr('genre', sys.argv[2])
+    frames.setAttr('movie_length', parser.movie_length)
 
     print 'Start video parsing'
 
