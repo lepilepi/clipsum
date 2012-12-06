@@ -61,7 +61,7 @@ if __name__ == '__main__':
     f = tables.openFile(filename, 'r+')
 
     # load shots from the HDF file into the memory
-    shots = [Shot(s[0],s[1], id=i) for i,s in enumerate(f.root.shots)][:20]
+    shots = [Shot(s[0],s[1], id=i) for i,s in enumerate(f.root.shots)]
 
     if not shots:
         raise Exception("no shots detected")
