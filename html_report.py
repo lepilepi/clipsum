@@ -40,8 +40,14 @@ clustering_group = getattr(f.root, 'clustering_%d' % clustering_index, None)
 clusters = []
 for arr in clustering_group:
     if arr.name.startswith('cluster_'):
-        shots = f.root.shots[arr[0]]
-        clusters.append([Shot(s[0], s[1]) for s in shots])
+
+        shots = []
+        for id in arr[0]:
+            shot = Shot(f.root.shots[id][0], f.root.shots[id][1])
+            shot.is_result = id in clustering_group.centroids[0]
+            shots.append(shot)
+
+        clusters.append(shots)
 
 shutil.rmtree('report/css', ignore_errors=True)
 shutil.rmtree('report/images', ignore_errors=True)
