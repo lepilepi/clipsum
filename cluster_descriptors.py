@@ -12,9 +12,13 @@ with the results.
 
 Usage: python cluster_descriptors.py video.avi 1000
 
-Alternative usage: python cluster_descriptors.py video.avi 1000 [scipy]
+Alternative usage:
+    python cluster_descriptors.py video.avi 1000 [--no-laplacian ][--scipy]
 (not recommended) """
 # -------------------------------
+
+skip_laplacian = (len(sys.argv)>3 and '--no-laplacian' in sys.argv)
+
 print 'Reading HDF file...'
 
 d1 = datetime.now()
@@ -24,10 +28,18 @@ f = tables.openFile(filename, 'r')
 
 n_keypoints = f.root.descriptors.nrows
 print n_keypoints
-m=np.empty((n_keypoints,128) ,dtype=np.float32)
 
-for i,row in enumerate(f.root.descriptors):
-    m[i] = row
+if skip_laplacian:
+    m=np.empty((n_keypoints,128) ,dtype=np.float32)
+else:
+    m=np.empty((n_keypoints,129) ,dtype=np.float32)
+
+if skip_laplacian:
+    for i,row in enumerate(f.root.descriptors):
+        m[i] = row
+else:
+    for i,row in enumerate(f.root.descriptors):
+        m[i] = np.append(row, f.root.keypoints[i]["laplacian"]*100)
 
 f.close()
 del f
@@ -41,7 +53,7 @@ print 'Starting clusterig method...'
 
 d1 = datetime.now()
 
-if len(sys.argv)>3 and sys.argv[3]=='scipy':
+if len(sys.argv)>3 and '--scipy' in sys.argv:
     print "Scipy kmeans"
     centroids, labels = scipy_kmeans(m, K, minit='points')
 else:
@@ -49,7 +61,7 @@ else:
     samples = cv.fromarray(m)
     labels = cv.CreateMat(samples.height, 1, cv.CV_32SC1)
 #    crit = (cv.CV_TERMCRIT_EPS + cv.CV_TERMCRIT_ITER, 10, 1.0)
-    crit = (cv.CV_TERMCRIT_ITER, 10)
+    crit = (cv.CV_TERMCRIT_ITER, 10, 0)
     cv.KMeans2(samples, K, labels, crit)
 
 
