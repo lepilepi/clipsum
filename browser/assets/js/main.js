@@ -102,7 +102,7 @@ $(document).ready(function() {
         var frame_num = $('#slider').slider("value")
         var el = $('<div class="content feature">                                  \
         <p>                                                               \
-            <button class="append">Append</button>                        \
+            <button class="append">Append/remove</button>                        \
             <span class="frame">'+frame_num+'</span>   \
             [<span class="x1">'+x1+'</span>, <span class="y1">'+y1+'</span>]  \
             [<span class="x2">'+x2+'</span>, <span class="y2">'+y2+'</span>]  \
@@ -143,8 +143,12 @@ $(document).ready(function() {
         var el = $(this).parent().parent().find('select')
         if ($('option[value='+frame_num+']',el).length==0){
             $('<option value="'+frame_num+'">'+frame_num+'</option>').appendTo(el)
+            $(this).parent().parent().css('background-color','#bbffbb')
+        } else {
+            $('option[value='+frame_num+']',el).remove()
+            $(this).parent().parent().css('background-color','')
         }
-        $(this).parent().parent().css('background-color','#bbffbb')
+
 
         $(".ui-slider-handle").focus()
     })
