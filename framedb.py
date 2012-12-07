@@ -5,9 +5,18 @@ from datetime import datetime
 
 from core.videoparser import VideoParser
 
+# genres from imdb.com
+GENRES = ['action', 'adventure', 'animation', 'biography', 'comedy', 'crime',
+ 'documentary', 'drama', 'family', 'fantasy', 'film-noir', 'game-show',
+ 'history', 'horror', 'music', 'musical', 'mystery', 'news', 'reality-tv',
+ 'romance', 'sci-fi', 'sport', 'talk-show', 'thriller', 'war', 'western']
+
 if __name__ == '__main__':
     """ Extracts frame differences and saves in a HDF file
     Usage: python framedb.py video.avi thriller"""
+
+    if not sys.argv[2].lower() in GENRES:
+        raise Exception("Invalid genre. Valid choices are: %s" % ','.join(GENRES))
 
     filename = '%s.hdf' % os.path.basename(sys.argv[1])
     f = tables.openFile(filename, 'w')
@@ -24,7 +33,7 @@ if __name__ == '__main__':
 
     parser = VideoParser(sys.argv[1])
 
-    frames.setAttr('genre', sys.argv[2])
+    frames.setAttr('genre', sys.argv[2].lower())
     frames.setAttr('movie_length', parser.movie_length)
 
     print 'Start video parsing'
