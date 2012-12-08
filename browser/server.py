@@ -7,6 +7,7 @@ from query import query_region
 
 MODULE_ROOT = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.join(MODULE_ROOT, '../')
+VIDEO_ROOT = os.path.join(MODULE_ROOT, '../videos/')
 
 WIDTH = 100
 
@@ -70,7 +71,7 @@ class FrameView:
     def GET(self, filename, type, pos):
 
         # opens the video file
-        filename = os.path.abspath(os.path.join(PROJECT_ROOT, filename))
+        filename = os.path.abspath(os.path.join(VIDEO_ROOT, filename))
         capture = cv.CaptureFromFile(filename)
 
         # jump to the correct position (time or frame based)
@@ -120,7 +121,7 @@ class FrameView:
 
 class hello:
     def GET(self):
-        video_files = [p for p in os.listdir(PROJECT_ROOT) if p[-4:]=='.avi']
+        video_files = [p for p in os.listdir(VIDEO_ROOT) if p[-4:]=='.avi']
 
         template = env.get_template('usage.html')
         return template.render(video_files=video_files)
