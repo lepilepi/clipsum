@@ -232,6 +232,10 @@ img.result{
     border: 5px solid red;
     margin: 0px;
 }
+img.centroid{
+    border: 5px solid blue;
+    margin: 0px;
+}
 .cluster{
     padding: 5px;
     border: 1px solid grey;

@@ -37,6 +37,8 @@ clustering_index = np.where(clusterings == min_clustering)
 
 clustering_group = getattr(f.root, 'clustering_%d' % clustering_index, None)
 
+min_size = len(f.root.shots)*0.06
+
 clusters = []
 for arr in clustering_group:
     if arr.name.startswith('cluster_'):
@@ -75,7 +77,7 @@ for i,cluster in enumerate(clusters):
 #jinja
 env = Environment(loader=PackageLoader('core', 'assets'))
 template = env.get_template('index_template.html')
-html = template.render(clusters = clusters)
+html = template.render(clusters = clusters, min_size = min_size)
 f=open('report/index.html', 'wb')
 f.write(html)
 

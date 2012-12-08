@@ -27,7 +27,15 @@
                 <div class="cluster_inner">
                     {% for shot in cluster %}
                         <a href="img/{{ shot.median|int }}.jpg">
-                            <img src="img/{{ shot.median|int }}_thumb.jpg" {% if shot.is_result %}class="result"{% endif %}/>
+                            <img src="img/{{ shot.median|int }}_thumb.jpg"
+                                {% if shot.is_result %}
+                                    {% if cluster|length >= min_size %}
+                                        class="result"
+                                    {% else %}
+                                        class="centroid"
+                                    {% endif %}
+                                {% endif %}
+                            />
                         </a>
                     {% endfor %}
                 </div>
