@@ -5,13 +5,11 @@ import sys
 import tables
 from framedb import GENRES
 
-if __name__ == '__main__':
+def classify_shots(filename):
     """ Runs SVM calassification for all the shots to get a group of shots for
-    summarized clip.
-    Usage: python classify_shots.py video.avi
-    """
+    summarized clip."""
 
-    filename = '%s.hdf' % os.path.basename(sys.argv[1])
+    filename = '%s.hdf' % os.path.basename(filename)
     f = tables.openFile(filename, 'r')
 
     total_frames = len(f.root.frames)
@@ -42,10 +40,15 @@ if __name__ == '__main__':
 
     selected_shots = [shots[i] for i,p in enumerate(prediction) if p==1]
 
-    import pdb;pdb.set_trace()
+    return selected_shots
 
 #|start|end|length|num_of_faces|dynamics|
 #|relative_pos|total_frames|movie_length|genre|
 
 # |length|num_of_faces|dynamics|relative_pos|total_frames|movie_length|
 # + |genre|
+
+if __name__ == '__main__':
+    """ Usage: python classify_shots.py video.avi """
+
+    results = classify_shots(sys.argv[1])
