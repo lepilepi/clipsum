@@ -28,7 +28,7 @@ def copyanything(src, dst):
         else: raise
 
 
-filename = os.path.basename(sys.argv[1])
+filename = sys.argv[1]
 hdf_filename = '%s.hdf' % os.path.basename(sys.argv[1])
 f = tables.openFile(hdf_filename, 'r+')
 clusterings = f.root.clusterings[:]
