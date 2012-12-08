@@ -139,6 +139,10 @@ class VideoParser(object):
         fps = GetCaptureProperty(self.capture, FPS)
         return self.total_frames / float(fps)
 
+    @property
+    def fps(self):
+        return GetCaptureProperty(self.capture, FPS)
+
     def parse(self):
         """ Goes through the video frame by frame calculates the differences"""
 

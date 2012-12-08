@@ -3,12 +3,12 @@ import sys
 import os
 import tables
 
-if __name__ == '__main__':
+def choose_results(filename):
     """
     Usage: python choose_results.py video.avi
     """
 
-    filename = '%s.hdf' % os.path.basename(sys.argv[1])
+    filename = '%s.hdf' % os.path.basename(filename)
     f = tables.openFile(filename, 'r')
 
     errors = f.root.clusterings.cols.squared_error[:].tolist()
@@ -27,6 +27,8 @@ if __name__ == '__main__':
             results.append(f.root.shots[c])
 
 
-    results = sorted(results, key=itemgetter(0))
+    return sorted(results, key=itemgetter(0))
 
+if __name__ == '__main__':
+    results = choose_results(sys.argv[1])
     import pdb;pdb.set_trace()
