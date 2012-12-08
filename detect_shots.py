@@ -29,14 +29,13 @@ def create_table_shots(f):
     f.createTable('/', 'shots', schema)
     return f.root.shots
 
-if __name__ == '__main__':
+def detect_shots(filename):
     """ Detect shots and calculates shot attributes, stores in the hdf file.
-    Usage: python detect_shots.py video.avi
     """
 
-    filename = '%s.hdf' % os.path.basename(sys.argv[1])
-    f = tables.openFile(filename, 'r+')
-    parser = VideoParser(sys.argv[1])
+    hdf_filename = '%s.hdf' % os.path.basename(filename)
+    f = tables.openFile(hdf_filename, 'r+')
+    parser = VideoParser(filename)
 
     shots_table = create_table_shots(f)
 
@@ -62,5 +61,9 @@ if __name__ == '__main__':
 
     shots_table.flush()
 
-
     create_table_clusterings(f)
+
+if __name__ == '__main__':
+    """ Usage: python detect_shots.py video.avi """
+
+    detect_shots(sys.argv[1])
