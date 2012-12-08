@@ -52,3 +52,5 @@ if __name__ == '__main__':
     """ Usage: python classify_shots.py video.avi """
 
     results = classify_shots(sys.argv[1])
+
+    import pdb;pdb.set_trace()
