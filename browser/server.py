@@ -36,13 +36,15 @@ class SaveFeatureView:
 
 class SearchView:
     def GET(self, filename):
+        filename = os.path.abspath(os.path.join(VIDEO_ROOT, filename))
+
         params = web.input(_method='get')
         p = int(params['p'])
-        x1 = int(params['x1'])
-        y1 = int(params['y1'])
+        x1 = int(float(params['x1']))
+        y1 = int(float(params['y1']))
 
-        x2 = int(params['x2'])
-        y2 = int(params['y2'])
+        x2 = int(float(params['x2']))
+        y2 = int(float(params['y2']))
 
         result = query_region(filename, p,x1,y1,x2,y2)
         template = env.get_template('search.html')
