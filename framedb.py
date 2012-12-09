@@ -19,6 +19,14 @@ if __name__ == '__main__':
         raise Exception("Invalid genre. Valid choices are: %s" % ','.join(GENRES))
 
     filename = '%s.hdf' % os.path.basename(sys.argv[1])
+    try:
+        f = tables.openFile(filename, 'r')
+    except IOError:
+        pass
+    else:
+        print "The hdf file is already there!"
+        sys.exit()
+
     f = tables.openFile(filename, 'w')
     # *****************************
     # Creating tables for frames
