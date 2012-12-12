@@ -96,7 +96,8 @@ class FrameView:
         if surf:
             im_grayscale = cv.CreateMat(img.height,  img.width,  cv.CV_8U)
             cv.CvtColor(img, im_grayscale, cv.CV_BGR2GRAY);
-            (keypoints, descriptors) = cv.ExtractSURF(im_grayscale, None, cv.CreateMemStorage(), (1, 30, 3, 4))
+            cv.EqualizeHist(im_grayscale, im_grayscale)
+            (keypoints, descriptors) = cv.ExtractSURF(im_grayscale, None, cv.CreateMemStorage(), (1, 400, 3, 4))
 
             for ((x, y), laplacian, size, dir, hessian) in keypoints:
                 cv.Circle(img,(int(x),int(y)),size/10, cv.Scalar(0,255,0),1)
